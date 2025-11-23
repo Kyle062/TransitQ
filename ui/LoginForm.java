@@ -2,8 +2,11 @@ package ui;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.font.TextAttribute;
 import java.awt.geom.RoundRectangle2D;
+import java.awt.geom.RoundRectangle2D.Float;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import javax.imageio.ImageIO;
@@ -42,40 +45,47 @@ public class LoginForm extends JFrame {
 
         BufferedImage leftImage = loadImage("images/leftPanel.jpg");
         JPanel leftPanel = createRoundedPanelWithImage(leftImage, 40, 40);
-        leftPanel.setBounds(150, 100, 450, 650);
-        leftPanel.setLayout(null); // if you want absolute positioning inside
-        leftPanel.setOpaque(false); // important so corners outside rounded area show background
+        leftPanel.setBounds(150, 80, 450, 670);
+        leftPanel.setLayout(null);
+        leftPanel.setOpaque(false);
         backgroundPanel.add(leftPanel);
 
-        // Right panel (white rounded background)
+        // Right panel
         JPanel rightPanel = createRoundedPanel(40, 40);
-        rightPanel.setBounds(630, 100, 450, 650);
-        rightPanel.setOpaque(false); // let rounded painting control the visible area
-        rightPanel.setLayout(null); // you used setBounds on child components, so keep null
+        rightPanel.setBounds(630, 80, 450, 670);
+        rightPanel.setOpaque(false);
+        rightPanel.setLayout(null);
         backgroundPanel.add(rightPanel);
 
         // Right panel Components
+        BufferedImage rightTopImage = loadImage("images/Logo3.png"); // your image path
+        ImageIcon rightTopIcon = new ImageIcon(rightTopImage);
+
+        JLabel imageLabel = new JLabel(rightTopIcon);
+        imageLabel.setBounds(150, 5, 150, 150); // adjust position & size
+        rightPanel.add(imageLabel);
+
         JLabel welcomeLabel = new JLabel("Welcome to TransitQ", SwingConstants.CENTER);
         welcomeLabel.setForeground(new Color(55, 79, 114));
         welcomeLabel.setFont(new Font("SansSerif", Font.BOLD, 30));
-        welcomeLabel.setBounds(30, 80, 400, 40);
+        welcomeLabel.setBounds(30, 110, 400, 40);
         rightPanel.add(welcomeLabel);
 
         JLabel welcomeLabel2 = new JLabel("Please fill the fields bellow to register as passenger",
                 SwingConstants.CENTER);
         welcomeLabel2.setForeground(Color.black);
         welcomeLabel2.setFont(new Font("SansSerif", Font.PLAIN, 16));
-        welcomeLabel2.setBounds(30, 110, 400, 40);
+        welcomeLabel2.setBounds(30, 135, 400, 40);
         rightPanel.add(welcomeLabel2);
 
         // Name Field
         JLabel nameLabel = new JLabel("Username: ");
         nameLabel.setFont(new Font("SansSerif", Font.BOLD, 16));
-        nameLabel.setBounds(20, 170, 200, 20);
+        nameLabel.setBounds(20, 180, 200, 20);
         rightPanel.add(nameLabel);
 
         JTextField nameTextField = new JTextField();
-        nameTextField.setBounds(20, 195, 400, 30);
+        nameTextField.setBounds(20, 205, 400, 30);
         nameTextField.setForeground(Color.BLACK);
         nameTextField.setFont(new Font("SansSerif", Font.PLAIN, 15));
         nameTextField.setOpaque(true);
@@ -84,11 +94,11 @@ public class LoginForm extends JFrame {
         // Age Field
         JLabel ageLabel = new JLabel("Age: ");
         ageLabel.setFont(new Font("SansSerif", Font.BOLD, 16));
-        ageLabel.setBounds(20, 230, 200, 20);
+        ageLabel.setBounds(20, 240, 200, 20);
         rightPanel.add(ageLabel);
 
         JTextField ageField = new JTextField();
-        ageField.setBounds(20, 255, 400, 30);
+        ageField.setBounds(20, 265, 400, 30);
         ageField.setForeground(Color.BLACK);
         ageField.setFont(new Font("SansSerif", Font.PLAIN, 15));
         ageField.setOpaque(true);
@@ -97,11 +107,11 @@ public class LoginForm extends JFrame {
         // Contact Number Field
         JLabel contactLabel = new JLabel("Contact Number: ");
         contactLabel.setFont(new Font("SansSerif", Font.BOLD, 16));
-        contactLabel.setBounds(20, 290, 200, 20);
+        contactLabel.setBounds(20, 300, 200, 20);
         rightPanel.add(contactLabel);
 
         JTextField contaField = new JTextField();
-        contaField.setBounds(20, 315, 400, 30);
+        contaField.setBounds(20, 325, 400, 30);
         contaField.setForeground(Color.BLACK);
         contaField.setFont(new Font("SansSerif", Font.PLAIN, 15));
         contaField.setOpaque(true);
@@ -110,23 +120,23 @@ public class LoginForm extends JFrame {
         // Passenger Types
         JLabel passengerLabel = new JLabel("Passenger Type: ");
         passengerLabel.setFont(new Font("SansSerif", Font.BOLD, 16));
-        passengerLabel.setBounds(20, 350, 200, 20);
+        passengerLabel.setBounds(20, 360, 200, 20);
         rightPanel.add(passengerLabel);
 
-        String passengerTypes[] = { "Child", "Teenager", "Adult", "Student" };
+        String passengerTypes[] = { "Child", "Teenager", "Adult", "Senior", "Student" };
         JComboBox<String> passengerComboBox = new JComboBox<>(passengerTypes);
-        passengerComboBox.setBounds(20, 375, 400, 30);
+        passengerComboBox.setBounds(20, 385, 400, 30);
         passengerComboBox.setFont(new Font("SansSerif", Font.BOLD, 16));
         rightPanel.add(passengerComboBox);
 
         // Destination
         JLabel destinationLabel = new JLabel("Destination: ");
         destinationLabel.setFont(new Font("SansSerif", Font.BOLD, 16));
-        destinationLabel.setBounds(20, 410, 200, 20);
+        destinationLabel.setBounds(20, 420, 200, 20);
         rightPanel.add(destinationLabel);
 
         JTextField destinationField = new JTextField();
-        destinationField.setBounds(20, 435, 400, 30);
+        destinationField.setBounds(20, 445, 400, 30);
         destinationField.setForeground(Color.BLACK);
         destinationField.setFont(new Font("SansSerif", Font.PLAIN, 15));
         destinationField.setOpaque(true);
@@ -135,32 +145,40 @@ public class LoginForm extends JFrame {
         // To Pay
         JLabel topayLabel = new JLabel("Payment [Cash]: ");
         topayLabel.setFont(new Font("SansSerif", Font.BOLD, 16));
-        topayLabel.setBounds(20, 470, 200, 20);
+        topayLabel.setBounds(20, 480, 200, 20);
         rightPanel.add(topayLabel);
 
         JTextField topayField = new JTextField();
-        topayField.setBounds(20, 495, 400, 30);
+        topayField.setBounds(20, 505, 400, 30);
         topayField.setForeground(Color.BLACK);
         topayField.setFont(new Font("SansSerif", Font.PLAIN, 15));
         topayField.setOpaque(true);
         rightPanel.add(topayField);
 
+        // Send Button
         JButton sendButton = new JButton("Send");
         sendButton.setBackground(new Color(234, 127, 55));
         sendButton.setForeground(Color.WHITE);
         sendButton.setFocusable(false);
         sendButton.setOpaque(true);
         sendButton.setBorderPainted(false);
-        sendButton.setBounds(165, 545, 100, 40);
-        sendButton.setFont(new Font("SansSerif", Font.PLAIN, 15));
+        sendButton.setBounds(165, 555, 100, 40);
+        sendButton.setFont(new Font("SansSerif", Font.BOLD, 15));
         rightPanel.add(sendButton);
 
         JLabel clickAdmin = new JLabel("Are you a Station Attendant?");
-        clickAdmin.setBounds(130, 600, 200, 30);
+        clickAdmin.setBounds(130, 610, 200, 30);
         clickAdmin.setFont(new Font("SansSerif", Font.PLAIN, 14));
         clickAdmin.setForeground(new Color(82, 181, 247));
         addUnderline(clickAdmin);
         rightPanel.add(clickAdmin);
+        clickAdmin.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {                
+                new LoginStationAttendant().setVisible(true);
+                dispose();
+            }
+        });
 
         sendButton.addActionListener(e -> {
             int result = JOptionPane.showConfirmDialog(
@@ -226,8 +244,8 @@ public class LoginForm extends JFrame {
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
                         RenderingHints.VALUE_ANTIALIAS_ON);
 
-                Shape clip = new RoundRectangle2D.Float(0, 0, getWidth(), getHeight(), arcW, arcH);
-                g2.setClip(clip);
+                Float clip = new RoundRectangle2D.Float(0, 0, getWidth(), getHeight(), arcW, arcH);
+                g2.setClip((java.awt.Shape) clip);
 
                 // Fill with image (if present) or fallback to white
                 if (img != null) {
@@ -264,7 +282,7 @@ public class LoginForm extends JFrame {
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
                         RenderingHints.VALUE_ANTIALIAS_ON);
 
-                Shape shape = new RoundRectangle2D.Float(0, 0, getWidth(), getHeight(), arcW, arcH);
+                Float shape = new RoundRectangle2D.Float(0, 0, getWidth(), getHeight(), arcW, arcH);
                 g2.setColor(Color.WHITE);
                 g2.fill(shape);
 
