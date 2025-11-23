@@ -2,11 +2,14 @@ package ui;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.font.TextAttribute;
 import java.awt.geom.RoundRectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import javax.imageio.ImageIO;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 public class LoginForm extends JFrame {
 
@@ -74,6 +77,8 @@ public class LoginForm extends JFrame {
         JTextField nameTextField = new JTextField();
         nameTextField.setBounds(20, 195, 400, 30);
         nameTextField.setForeground(Color.BLACK);
+        nameTextField.setFont(new Font("SansSerif", Font.PLAIN, 15));
+        nameTextField.setOpaque(true);
         rightPanel.add(nameTextField);
 
         // Age Field
@@ -85,6 +90,8 @@ public class LoginForm extends JFrame {
         JTextField ageField = new JTextField();
         ageField.setBounds(20, 255, 400, 30);
         ageField.setForeground(Color.BLACK);
+        ageField.setFont(new Font("SansSerif", Font.PLAIN, 15));
+        ageField.setOpaque(true);
         rightPanel.add(ageField);
 
         // Contact Number Field
@@ -96,6 +103,8 @@ public class LoginForm extends JFrame {
         JTextField contaField = new JTextField();
         contaField.setBounds(20, 315, 400, 30);
         contaField.setForeground(Color.BLACK);
+        contaField.setFont(new Font("SansSerif", Font.PLAIN, 15));
+        contaField.setOpaque(true);
         rightPanel.add(contaField);
 
         // Passenger Types
@@ -104,15 +113,97 @@ public class LoginForm extends JFrame {
         passengerLabel.setBounds(20, 350, 200, 20);
         rightPanel.add(passengerLabel);
 
-        String passengerTypes[] = { "Child", "Adult", "Student" };
+        String passengerTypes[] = { "Child", "Teenager", "Adult", "Student" };
         JComboBox<String> passengerComboBox = new JComboBox<>(passengerTypes);
         passengerComboBox.setBounds(20, 375, 400, 30);
         passengerComboBox.setFont(new Font("SansSerif", Font.BOLD, 16));
         rightPanel.add(passengerComboBox);
 
-        
+        // Destination
+        JLabel destinationLabel = new JLabel("Destination: ");
+        destinationLabel.setFont(new Font("SansSerif", Font.BOLD, 16));
+        destinationLabel.setBounds(20, 410, 200, 20);
+        rightPanel.add(destinationLabel);
 
+        JTextField destinationField = new JTextField();
+        destinationField.setBounds(20, 435, 400, 30);
+        destinationField.setForeground(Color.BLACK);
+        destinationField.setFont(new Font("SansSerif", Font.PLAIN, 15));
+        destinationField.setOpaque(true);
+        rightPanel.add(destinationField);
 
+        // To Pay
+        JLabel topayLabel = new JLabel("Payment [Cash]: ");
+        topayLabel.setFont(new Font("SansSerif", Font.BOLD, 16));
+        topayLabel.setBounds(20, 470, 200, 20);
+        rightPanel.add(topayLabel);
+
+        JTextField topayField = new JTextField();
+        topayField.setBounds(20, 495, 400, 30);
+        topayField.setForeground(Color.BLACK);
+        topayField.setFont(new Font("SansSerif", Font.PLAIN, 15));
+        topayField.setOpaque(true);
+        rightPanel.add(topayField);
+
+        JButton sendButton = new JButton("Send");
+        sendButton.setBackground(new Color(234, 127, 55));
+        sendButton.setForeground(Color.WHITE);
+        sendButton.setFocusable(false);
+        sendButton.setOpaque(true);
+        sendButton.setBorderPainted(false);
+        sendButton.setBounds(165, 545, 100, 40);
+        sendButton.setFont(new Font("SansSerif", Font.PLAIN, 15));
+        rightPanel.add(sendButton);
+
+        JLabel clickAdmin = new JLabel("Are you a Station Attendant?");
+        clickAdmin.setBounds(130, 600, 200, 30);
+        clickAdmin.setFont(new Font("SansSerif", Font.PLAIN, 14));
+        clickAdmin.setForeground(new Color(82, 181, 247));
+        addUnderline(clickAdmin);
+        rightPanel.add(clickAdmin);
+
+        sendButton.addActionListener(e -> {
+            int result = JOptionPane.showConfirmDialog(
+                    backgroundPanel, // Parent component
+                    "Are you sure you want to send?", // Message
+                    "Confirmation", // Title
+                    JOptionPane.OK_CANCEL_OPTION // Option type
+            );
+
+            if (result == JOptionPane.OK_OPTION) {
+                String passengerName = nameTextField.getText();
+                String passengerAge = ageField.getText();
+                String passengerContact = contaField.getText();
+                String passengerDestination = destinationField.getText();
+                String passengerCash = topayField.getText();
+
+                // ERROR MESSAGES
+                if (passengerName.isEmpty() || passengerAge.isEmpty() || passengerContact.isEmpty()
+                        || passengerDestination.isEmpty()) {
+                    JOptionPane.showMessageDialog(backgroundPanel, "Please fill out all fields!", "Input Error",
+                            JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+
+                int passengerAge1;
+                try {
+                    passengerAge1 = Integer.parseInt(ageField.getText());
+                } catch (NumberFormatException ex) {
+                    JOptionPane.showMessageDialog(backgroundPanel, "Invalid age format. Please enter a number.",
+                            "Input Error", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+
+                if (!passengerContact.matches("\\d{10,15}")) {
+                    JOptionPane.showMessageDialog(backgroundPanel, "Invalid contact number format. Use only digits.",
+                            "Input Error", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+
+            } else if (result == JOptionPane.CANCEL_OPTION || result == JOptionPane.CLOSED_OPTION) {
+                JOptionPane.showMessageDialog(backgroundPanel, "Cancel or dialog closed. No action taken.");
+            }
+        });
 
         // show frame
         setVisible(true);
@@ -196,4 +287,18 @@ public class LoginForm extends JFrame {
         };
     }
 
+    private void addUnderline(JLabel label) {
+        if (label == null) {
+            return;
+        }
+
+        Font font = label.getFont();
+        Map<TextAttribute, Object> attributes = new HashMap<>(font.getAttributes());
+
+        // Set the underline attribute to ON
+        attributes.put(TextAttribute.UNDERLINE, TextAttribute.UNDERLINE_ON);
+
+        // Create a new font with the added attribute and set it to the label
+        label.setFont(font.deriveFont(attributes));
+    }
 }
