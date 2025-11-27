@@ -247,7 +247,7 @@ public class TransitQGUI extends JFrame {
                 if ("ADD PASSENGER".equals(btn.getText())) {
                     btn.setFont(new Font("Arial", Font.BOLD, 16));
                     if (ticketAreaContainer != null) {
-                        btn.setBounds(ticketAreaContainer.getX() + 12 ,
+                        btn.setBounds(ticketAreaContainer.getX() + 85 ,
                                 ticketAreaContainer.getY() + ticketAreaContainer.getHeight() + 18,
                                 280, 48);
                     } else {
@@ -256,7 +256,7 @@ public class TransitQGUI extends JFrame {
                 } else if ("PASS PASSENGER".equals(btn.getText())) {
                     btn.setFont(new Font("Arial", Font.BOLD, 16));
                     if (ticketAreaContainer != null) {
-                        btn.setBounds(ticketAreaContainer.getX() + 12,
+                        btn.setBounds(ticketAreaContainer.getX() + 85,
                                 ticketAreaContainer.getY() + ticketAreaContainer.getHeight() + 86,
                                 280, 48);
                     } else {
