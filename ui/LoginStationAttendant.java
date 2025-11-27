@@ -98,21 +98,21 @@ public class LoginStationAttendant extends JFrame {
         // --- Station Attendant Login Fields ---
         JLabel userLabel = new JLabel("Username:");
         userLabel.setFont(new Font("SansSerif", Font.BOLD, 16));
-        userLabel.setBounds(20, 260, 200, 20);
+        userLabel.setBounds(55, 260, 200, 20);
         rightPanel.add(userLabel);
 
         JTextField userTextField = new JTextField();
-        userTextField.setBounds(20, 285, 400, 30);
+        userTextField.setBounds(55, 285, 350, 30);
         userTextField.setFont(new Font("SansSerif", Font.PLAIN, 15));
         rightPanel.add(userTextField);
 
         JLabel passLabel = new JLabel("Password:");
         passLabel.setFont(new Font("SansSerif", Font.BOLD, 16));
-        passLabel.setBounds(20, 330, 200, 20);
+        passLabel.setBounds(55, 330, 200, 20);
         rightPanel.add(passLabel);
 
         JPasswordField passwordField = new JPasswordField();
-        passwordField.setBounds(20, 355, 400, 30);
+        passwordField.setBounds(55, 355, 350, 30);
         passwordField.setFont(new Font("SansSerif", Font.PLAIN, 15));
         rightPanel.add(passwordField);
 
@@ -153,7 +153,7 @@ public class LoginStationAttendant extends JFrame {
 
             // --- Your Authentication Logic Goes Here ---
 
-            if (username.equals("admin") && password.equals("password123")) {
+            if (username.equalsIgnoreCase("admin") && password.equalsIgnoreCase("admin123")) {
                 JOptionPane.showMessageDialog(rightPanel, "Login Successful! Welcome, Attendant.", "Success",
                         JOptionPane.INFORMATION_MESSAGE);
 
@@ -256,6 +256,10 @@ public class LoginStationAttendant extends JFrame {
         attributes.put(TextAttribute.UNDERLINE, TextAttribute.UNDERLINE_ON);
 
         label.setFont(font.deriveFont(attributes));
+    }
+
+    public static void main(String[] args) {
+        new LoginStationAttendant().setVisible(true);;
     }
 
 

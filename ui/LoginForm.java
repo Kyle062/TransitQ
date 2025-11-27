@@ -81,11 +81,11 @@ public class LoginForm extends JFrame {
         // Name Field
         JLabel nameLabel = new JLabel("Username: ");
         nameLabel.setFont(new Font("SansSerif", Font.BOLD, 16));
-        nameLabel.setBounds(20, 180, 200, 20);
+        nameLabel.setBounds(55, 180, 200, 20);
         rightPanel.add(nameLabel);
 
         JTextField nameTextField = new JTextField();
-        nameTextField.setBounds(20, 205, 400, 30);
+        nameTextField.setBounds(55, 205, 350, 30);
         nameTextField.setForeground(Color.BLACK);
         nameTextField.setFont(new Font("SansSerif", Font.PLAIN, 15));
         nameTextField.setOpaque(true);
@@ -94,11 +94,11 @@ public class LoginForm extends JFrame {
         // Age Field
         JLabel ageLabel = new JLabel("Age: ");
         ageLabel.setFont(new Font("SansSerif", Font.BOLD, 16));
-        ageLabel.setBounds(20, 240, 200, 20);
+        ageLabel.setBounds(55, 240, 200, 20);
         rightPanel.add(ageLabel);
 
         JTextField ageField = new JTextField();
-        ageField.setBounds(20, 265, 400, 30);
+        ageField.setBounds(55, 265, 350, 30);
         ageField.setForeground(Color.BLACK);
         ageField.setFont(new Font("SansSerif", Font.PLAIN, 15));
         ageField.setOpaque(true);
@@ -107,11 +107,11 @@ public class LoginForm extends JFrame {
         // Contact Number Field
         JLabel contactLabel = new JLabel("Contact Number: ");
         contactLabel.setFont(new Font("SansSerif", Font.BOLD, 16));
-        contactLabel.setBounds(20, 300, 200, 20);
+        contactLabel.setBounds(55, 300, 200, 20);
         rightPanel.add(contactLabel);
 
         JTextField contaField = new JTextField();
-        contaField.setBounds(20, 325, 400, 30);
+        contaField.setBounds(55, 325, 350, 30);
         contaField.setForeground(Color.BLACK);
         contaField.setFont(new Font("SansSerif", Font.PLAIN, 15));
         contaField.setOpaque(true);
@@ -120,23 +120,23 @@ public class LoginForm extends JFrame {
         // Passenger Types
         JLabel passengerLabel = new JLabel("Passenger Type: ");
         passengerLabel.setFont(new Font("SansSerif", Font.BOLD, 16));
-        passengerLabel.setBounds(20, 360, 200, 20);
+        passengerLabel.setBounds(55, 360, 200, 20);
         rightPanel.add(passengerLabel);
 
         String passengerTypes[] = { "Child", "Teenager", "Adult", "Senior", "Student" };
         JComboBox<String> passengerComboBox = new JComboBox<>(passengerTypes);
-        passengerComboBox.setBounds(20, 385, 400, 30);
+        passengerComboBox.setBounds(55, 385, 350, 30);
         passengerComboBox.setFont(new Font("SansSerif", Font.BOLD, 16));
         rightPanel.add(passengerComboBox);
 
         // Destination
         JLabel destinationLabel = new JLabel("Destination: ");
         destinationLabel.setFont(new Font("SansSerif", Font.BOLD, 16));
-        destinationLabel.setBounds(20, 420, 200, 20);
+        destinationLabel.setBounds(55, 420, 200, 20);
         rightPanel.add(destinationLabel);
 
         JTextField destinationField = new JTextField();
-        destinationField.setBounds(20, 445, 400, 30);
+        destinationField.setBounds(55, 445, 350, 30);
         destinationField.setForeground(Color.BLACK);
         destinationField.setFont(new Font("SansSerif", Font.PLAIN, 15));
         destinationField.setOpaque(true);
@@ -145,11 +145,11 @@ public class LoginForm extends JFrame {
         // To Pay
         JLabel topayLabel = new JLabel("Payment [Cash]: ");
         topayLabel.setFont(new Font("SansSerif", Font.BOLD, 16));
-        topayLabel.setBounds(20, 480, 200, 20);
+        topayLabel.setBounds(55, 480, 350, 20);
         rightPanel.add(topayLabel);
 
         JTextField topayField = new JTextField();
-        topayField.setBounds(20, 505, 400, 30);
+        topayField.setBounds(55, 505, 350, 30);
         topayField.setForeground(Color.BLACK);
         topayField.setFont(new Font("SansSerif", Font.PLAIN, 15));
         topayField.setOpaque(true);
