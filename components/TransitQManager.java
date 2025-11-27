@@ -12,8 +12,8 @@ public class TransitQManager {
     private Queue<Passenger> assignAreaQueue;
     private List<Passenger> servedLog;
 
-    private final int TICKET_AREA_CAPACITY = 20;
-    private final int ASSIGN_AREA_DISPLAY_CAPACITY = 20;
+    private final int TICKET_AREA_CAPACITY = 15;
+    private final int ASSIGN_AREA_DISPLAY_CAPACITY = 15;
     private Map<String, Bus> buses;
     private String currentlyAssignedBusName;
 
@@ -60,19 +60,7 @@ public class TransitQManager {
         Passenger p11 = new Passenger("Mark Ruiz", "Airport", "VIP", "Card");
         Passenger p12 = new Passenger("Carla Reyes", "Market", "Discounted", "Cash");
 
-        // Passenger 13-15
-        Passenger p13 = new Passenger("Alice Santos", "Downtown", "Standard", "Cash");
-        Passenger p14 = new Passenger("Mark Ruiz", "Airport", "VIP", "Card");
-        Passenger p15 = new Passenger("Carla Reyes", "Market", "Discounted", "Cash");
-
-        // Passenger 16-18
-        Passenger p16 = new Passenger("Alice Santos", "Downtown", "Standard", "Cash");
-        Passenger p17 = new Passenger("Mark Ruiz", "Airport", "VIP", "Card");
-        Passenger p18 = new Passenger("Carla Reyes", "Market", "Discounted", "Cash");
-
-        // Passenger 19-20 (Completing the 20)
-        Passenger p19 = new Passenger("Alice Santos", "Downtown", "Standard", "Cash");
-        Passenger p20 = new Passenger("Mark Ruiz", "Airport", "VIP", "Card");
+      
 
         // Offer them into queue while capacity permits
         addPassengerToTicketArea(p1);
@@ -87,14 +75,7 @@ public class TransitQManager {
         addPassengerToTicketArea(p10);
         addPassengerToTicketArea(p11);
         addPassengerToTicketArea(p12);
-        addPassengerToTicketArea(p13);
-        addPassengerToTicketArea(p14);
-        addPassengerToTicketArea(p15);
-        addPassengerToTicketArea(p16);
-        addPassengerToTicketArea(p17);
-        addPassengerToTicketArea(p18);
-        addPassengerToTicketArea(p19);
-        addPassengerToTicketArea(p20);
+       
     }
 
     // --- Core Operations ---

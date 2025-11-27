@@ -40,4 +40,9 @@ public class Bus {
     public String toString() {
         return name + " (" + currentLoad + "/" + capacity + ")";
     }
+
+    public void addPassenger(Passenger p) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'addPassenger'");
+    }
 }

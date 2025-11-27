@@ -113,7 +113,6 @@ public class TransitQGUI extends JFrame {
             }
         });
 
-        // Pack/set visible to trigger the componentResized event soon after
         setVisible(true);
 
         updateVisuals();
@@ -180,7 +179,6 @@ public class TransitQGUI extends JFrame {
             return;
         }
 
-        // ---------- Place inner right panel ---------- (to the right of sidebar)
         int innerX = sidebarX + sidebarW + 30;
         int innerY = 20;
         // size proportional to available content area to keep large visual
@@ -189,8 +187,8 @@ public class TransitQGUI extends JFrame {
         innerRightPanel.setBounds(innerX, innerY, innerW, innerH);
 
         // ---------- Bus Panels (2x2 grid) inside innerRightPanel ----------
-        int busW = 220;
-        int busH = 240;
+        int busW = 160;
+        int busH = 160;
         int leftColX = 34;
         int rightColX = leftColX + busW + 110;
         int topRowY = 42;
@@ -198,13 +196,13 @@ public class TransitQGUI extends JFrame {
 
         if (busPanels != null) {
             if (busPanels.get("BUS C") != null)
-                busPanels.get("BUS C").setBounds(leftColX, topRowY, busW, busH);
+                busPanels.get("BUS C").setBounds(leftColX + 170, topRowY + 320, busW, busH);
             if (busPanels.get("BUS A") != null)
-                busPanels.get("BUS A").setBounds(rightColX - 100, topRowY, busW, busH);
+                busPanels.get("BUS A").setBounds(rightColX - 100, topRowY - 30, busW, busH);
             if (busPanels.get("BUS D") != null)
-                busPanels.get("BUS D").setBounds(leftColX, bottomRowY, busW, busH);
+                busPanels.get("BUS D").setBounds(leftColX + 170, bottomRowY + 300, busW, busH);
             if (busPanels.get("BUS B") != null)
-                busPanels.get("BUS B").setBounds(rightColX - 100, bottomRowY, busW, busH);
+                busPanels.get("BUS B").setBounds(rightColX - 100, bottomRowY - 50, busW, busH);
         }
 
         // ---------- ASSIGN PASSENGER AREA (center-top) ----------
@@ -224,7 +222,7 @@ public class TransitQGUI extends JFrame {
         for (Component comp : innerRightPanel.getComponents()) {
             if (comp instanceof JPanel && "RED_SEPARATOR".equals(comp.getName())) {
                 int sepW = 14;
-                int sepX = innerW - 380; // near right side, matching reference
+                int sepX = innerW - 380;
                 int sepY = 30;
                 comp.setBounds(sepX, sepY, sepW, innerH - 110);
                 break;
@@ -237,7 +235,7 @@ public class TransitQGUI extends JFrame {
             int ticketH = 400;
             int ticketX = innerW - 330; // position to the right of separator
             int ticketY = 80;
-            ticketAreaContainer.setBounds(ticketX, ticketY, ticketW , ticketH );
+            ticketAreaContainer.setBounds(ticketX, ticketY, ticketW, ticketH);
         }
 
         // ---------- Ticket area buttons (stacked under ticket area) ----------
@@ -247,7 +245,7 @@ public class TransitQGUI extends JFrame {
                 if ("ADD PASSENGER".equals(btn.getText())) {
                     btn.setFont(new Font("Arial", Font.BOLD, 16));
                     if (ticketAreaContainer != null) {
-                        btn.setBounds(ticketAreaContainer.getX() + 85 ,
+                        btn.setBounds(ticketAreaContainer.getX() + 85,
                                 ticketAreaContainer.getY() + ticketAreaContainer.getHeight() + 18,
                                 280, 48);
                     } else {
