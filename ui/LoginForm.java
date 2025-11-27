@@ -58,11 +58,11 @@ public class LoginForm extends JFrame {
         backgroundPanel.add(rightPanel);
 
         // Right panel Components
-        BufferedImage rightTopImage = loadImage("images/Logo3.png"); // your image path
+        BufferedImage rightTopImage = loadImage("images/Logo3.png");
         ImageIcon rightTopIcon = new ImageIcon(rightTopImage);
 
         JLabel imageLabel = new JLabel(rightTopIcon);
-        imageLabel.setBounds(150, 5, 150, 150); // adjust position & size
+        imageLabel.setBounds(150, 5, 150, 150); 
         rightPanel.add(imageLabel);
 
         JLabel welcomeLabel = new JLabel("Welcome to TransitQ", SwingConstants.CENTER);
@@ -223,7 +223,6 @@ public class LoginForm extends JFrame {
             }
         });
 
-        // show frame
         setVisible(true);
     }
 
@@ -309,14 +308,9 @@ public class LoginForm extends JFrame {
         if (label == null) {
             return;
         }
-
         Font font = label.getFont();
         Map<TextAttribute, Object> attributes = new HashMap<>(font.getAttributes());
-
-        // Set the underline attribute to ON
         attributes.put(TextAttribute.UNDERLINE, TextAttribute.UNDERLINE_ON);
-
-        // Create a new font with the added attribute and set it to the label
         label.setFont(font.deriveFont(attributes));
     }
 }

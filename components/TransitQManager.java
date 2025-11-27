@@ -1,4 +1,5 @@
 package components;
+
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.List;
@@ -28,6 +29,25 @@ public class TransitQManager {
         buses.put("BUS D", new Bus("BUS D", 10));
 
         this.currentlyAssignedBusName = "BUS A";
+
+        // Seed predefined passengers so UI starts with some data
+        seedPredefinedPassengers();
+    }
+
+    private void seedPredefinedPassengers() {
+        // Only add if there's space (and avoid seeding multiple times if constructor
+        // called repeatedly)
+        if (ticketAreaQueue.size() >= TICKET_AREA_CAPACITY)
+            return;
+
+        Passenger p1 = new Passenger("Alice Santos", "Downtown", "Standard", "Cash");
+        Passenger p2 = new Passenger("Mark Ruiz", "Airport", "VIP", "Card");
+        Passenger p3 = new Passenger("Carla Reyes", "Market", "Discounted", "Cash");
+
+        // Offer them into queue while capacity permits
+        addPassengerToTicketArea(p1);
+        addPassengerToTicketArea(p2);
+        addPassengerToTicketArea(p3);
     }
 
     // --- Core Operations ---
@@ -74,10 +94,19 @@ public class TransitQManager {
 
         Passenger boarded = assignAreaQueue.poll();
         if (boarded != null) {
-            assignedBus.boardPassenger();
-            servedLog.add(boarded);
-            return "BOARDED: Passenger ID " + boarded.getPassengerId() + " has boarded " + currentlyAssignedBusName +
-                    ". Load: " + assignedBus.getCurrentLoad() + "/" + assignedBus.getCapacity();
+            // Use return value of boardPassenger to be safe
+            boolean boardedOk = assignedBus.boardPassenger();
+            if (boardedOk) {
+                servedLog.add(boarded);
+                return "BOARDED: Passenger ID " + boarded.getPassengerId() + " has boarded " + currentlyAssignedBusName
+                        +
+                        ". Load: " + assignedBus.getCurrentLoad() + "/" + assignedBus.getCapacity();
+            } else {
+                // In case bus was filled between checks, put passenger back to the assign area
+                assignAreaQueue.offer(boarded);
+                return "ALERT: " + assignedBus.getName()
+                        + " became full before boarding. Passenger returned to assign area.";
+            }
         }
         return "ERROR: Failed to board passenger (unexpected error).";
     }

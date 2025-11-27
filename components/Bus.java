@@ -1,4 +1,5 @@
 package components;
+
 public class Bus {
     private String name;
     private int capacity;
@@ -17,18 +18,26 @@ public class Bus {
     public int getCapacity() {
         return capacity;
     }
-    
+
     public int getCurrentLoad() {
         return currentLoad;
     }
 
-    public void boardPassenger() {
+    // Returns true if boarding succeeds, false if bus is full
+    public boolean boardPassenger() {
         if (currentLoad < capacity) {
             currentLoad++;
+            return true; // boarding successful
         }
+        return false; // bus is full
     }
-    
+
     public void resetLoad() {
         currentLoad = 0;
+    }
+
+    @Override
+    public String toString() {
+        return name + " (" + currentLoad + "/" + capacity + ")";
     }
 }

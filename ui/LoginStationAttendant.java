@@ -7,11 +7,9 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.event.ActionListener;
-// Remove the incorrect import: import java.awt.event.MouseAdapter; 
 import java.awt.event.MouseAdapter; 
 import java.awt.event.MouseAdapter;
-// Add/Ensure this import is present:
-import java.awt.event.MouseEvent; // <-- Correct MouseEvent for Swing
+import java.awt.event.MouseEvent;
 import java.awt.font.TextAttribute;
 import java.awt.geom.RoundRectangle2D;
 import java.awt.image.BufferedImage;
@@ -30,7 +28,6 @@ import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
-import javax.swing.SwingUtilities;
 
 
 public class LoginStationAttendant extends JFrame {
@@ -99,7 +96,6 @@ public class LoginStationAttendant extends JFrame {
         rightPanel.add(welcomeLabel2);
 
         // --- Station Attendant Login Fields ---
-
         JLabel userLabel = new JLabel("Username:");
         userLabel.setFont(new Font("SansSerif", Font.BOLD, 16));
         userLabel.setBounds(20, 260, 200, 20);

@@ -1,6 +1,6 @@
 package ui;
-import javax.swing.*;
 
+import javax.swing.*;
 
 import components.Bus;
 import components.Passenger;
@@ -10,6 +10,7 @@ import java.awt.*;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseMotionAdapter;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.util.Collection;
@@ -30,6 +31,16 @@ public class TransitQGUI extends JFrame {
 
     private Map<String, JPanel> busPanels;
     private String pulsingBusName = null; // Tracks which bus should have the pulse effect
+
+    // The moveable button reference
+    private JButton addToBusButton;
+    // Offsets (relative nudges applied to default computed position)
+    private int addBtnOffsetX = 0;
+    private int addBtnOffsetY = 0;
+    // If user drags the button, we use absolute coordinates to persist position
+    private boolean addBtnUseAbsolute = false;
+    private int addBtnAbsoluteX = 0;
+    private int addBtnAbsoluteY = 0;
 
     // --- Color Palette ---
     private final Color DARK_BLUE_FRAME = new Color(30, 48, 77);
@@ -108,6 +119,17 @@ public class TransitQGUI extends JFrame {
         updateVisuals();
     }
 
+    // Public API: reset to computed layout (no absolute or offsets)
+    public void resetAddToBusButtonPlacement() {
+        addBtnOffsetX = 0;
+        addBtnOffsetY = 0;
+        addBtnUseAbsolute = false;
+        Container content = getContentPane();
+        if (content != null && content.getComponentCount() > 0) {
+            updateLayoutForContentPanelSize((JPanel) content.getComponent(0));
+        }
+    }
+
     // --- Dynamic Layout Method (Ensures proportional sizing and prevents cutoff)
     // ---
     // ---------- updateLayoutForContentPanelSize ----------
@@ -176,22 +198,22 @@ public class TransitQGUI extends JFrame {
 
         if (busPanels != null) {
             if (busPanels.get("BUS C") != null)
-                busPanels.get("BUS C").setBounds(leftColX , topRowY, busW, busH);
+                busPanels.get("BUS C").setBounds(leftColX, topRowY, busW, busH);
             if (busPanels.get("BUS A") != null)
-                busPanels.get("BUS A").setBounds(rightColX, topRowY, busW, busH);
+                busPanels.get("BUS A").setBounds(rightColX - 100, topRowY, busW, busH);
             if (busPanels.get("BUS D") != null)
                 busPanels.get("BUS D").setBounds(leftColX, bottomRowY, busW, busH);
             if (busPanels.get("BUS B") != null)
-                busPanels.get("BUS B").setBounds(rightColX, bottomRowY, busW, busH);
+                busPanels.get("BUS B").setBounds(rightColX - 100, bottomRowY, busW, busH);
         }
 
         // ---------- ASSIGN PASSENGER AREA (center-top) ----------
         for (Component comp : innerRightPanel.getComponents()) {
             if (comp instanceof JPanel && "ASSIGN_AREA_TOP_LEVEL".equals(comp.getName())) {
-                int assignW = 520;
-                int assignH = 220;
+                int assignW = 400;
+                int assignH = 420;
                 // slightly left-of-center, matching screenshot composition
-                int assignX = (innerW / 2) - (assignW / 2) - 20;
+                int assignX = (innerW / 2) - (assignW / 2) + 60;
                 int assignY = 20;
                 comp.setBounds(assignX, assignY, assignW, assignH);
                 break;
@@ -211,11 +233,11 @@ public class TransitQGUI extends JFrame {
 
         // ---------- Ticket Area (rounded box at right) ----------
         if (ticketAreaContainer != null) {
-            int ticketW = 320;
-            int ticketH = 280;
-            int ticketX = innerW - 360; // position to the right of separator
+            int ticketW = 450;
+            int ticketH = 400;
+            int ticketX = innerW - 330; // position to the right of separator
             int ticketY = 80;
-            ticketAreaContainer.setBounds(ticketX, ticketY, ticketW, ticketH);
+            ticketAreaContainer.setBounds(ticketX, ticketY, ticketW , ticketH );
         }
 
         // ---------- Ticket area buttons (stacked under ticket area) ----------
@@ -225,7 +247,7 @@ public class TransitQGUI extends JFrame {
                 if ("ADD PASSENGER".equals(btn.getText())) {
                     btn.setFont(new Font("Arial", Font.BOLD, 16));
                     if (ticketAreaContainer != null) {
-                        btn.setBounds(ticketAreaContainer.getX() + 12,
+                        btn.setBounds(ticketAreaContainer.getX() + 12 ,
                                 ticketAreaContainer.getY() + ticketAreaContainer.getHeight() + 18,
                                 280, 48);
                     } else {
@@ -241,24 +263,32 @@ public class TransitQGUI extends JFrame {
                         btn.setBounds(innerW - 340, innerH - 100, 280, 48);
                     }
                 }
-            }   
+            }
         }
 
         // ---------- Big "ADD PASSENGER TO THE BUS" button (center-bottom of inner
         // area) ----------
-        for (Component comp : innerRightPanel.getComponents()) {
-            if (comp instanceof JButton && "ADD PASSENGER TO THE BUS".equals(((JButton) comp).getText())) {
-                JButton big = (JButton) comp;
-                big.setFont(new Font("Arial", Font.BOLD, 16));
-                // place it centered horizontally under the bus grid area
-                int bigW = 360;
-                int bigH = 54;
-                int bigX = innerX + (innerW / 2) - (bigW / 2) - 80; // slight left offset to reflect screenshot
-                int bigY = innerY + innerH - 200;
-                big.setBounds(bigX, bigY, bigW, bigH);
-                break;
+        if (addToBusButton != null) {
+            addToBusButton.setFont(new Font("Arial", Font.BOLD, 16));
+            int bigW = 360;
+            int bigH = 54;
+
+            if (addBtnUseAbsolute) {
+                // Use absolute coordinates preserved from drag
+                addToBusButton.setBounds(addBtnAbsoluteX, addBtnAbsoluteY, bigW, bigH);
+            } else {
+                // Default computed position relative to inner area + offsets
+                int baseBigX = innerX + (innerW / 2) - (bigW / 2) - 80; // same base as before
+                int baseBigY = innerY + innerH - 200;
+                int bigX = baseBigX + addBtnOffsetX;
+                int bigY = baseBigY + addBtnOffsetY;
+                addToBusButton.setBounds(bigX, bigY, bigW, bigH);
+                // update absolute too (useful if user later drags)
+                addBtnAbsoluteX = bigX;
+                addBtnAbsoluteY = bigY;
             }
         }
+
         innerRightPanel.setBounds(220, 12, 1580, 760);
 
         // Revalidate & repaint
@@ -291,7 +321,7 @@ public class TransitQGUI extends JFrame {
                 g2.drawRoundRect(0, 0, w - 1, h - 1, arc, arc);
                 g2.dispose();
                 super.paintComponent(g);
-                
+
             }
         };
         rightJPanel.setName("INNER_RIGHT_PANEL");
@@ -299,7 +329,7 @@ public class TransitQGUI extends JFrame {
         rightJPanel.setLayout(null);
         // initial bounds — updateLayout will set final sizes
         rightJPanel.setBounds(420, 12, 1280, 760);
-        
+
         contentPanel.add(rightJPanel);
 
         // --- Sidebar Buttons on contentPanel (stacked vertically) ---
@@ -328,7 +358,15 @@ public class TransitQGUI extends JFrame {
 
         // --- Big "ADD PASSENGER TO THE BUS" button (placed on contentPanel so it
         // visually overlaps inner area) ---
-        rightJPanel.add(createStyledButton("ADD PASSENGER TO THE BUS", 0, 0, 1, 1, e -> addPassengerToBusAction()));
+        addToBusButton = createStyledButton("ADD PASSENGER TO THE BUS", 0, 0, 1, 1, e -> addPassengerToBusAction());
+        rightJPanel.add(addToBusButton);
+
+        // Permanently place the button at X=1200 Y=600 (change these values)
+        addBtnUseAbsolute = true;
+        addBtnAbsoluteX = 610; // desired X
+        addBtnAbsoluteY = 500; // desired Y
+        // set actual bounds now (width and height must match those used in layout)
+        addToBusButton.setBounds(addBtnAbsoluteX, addBtnAbsoluteY, 360, 54);
 
         // --- Red Separator inside innerRightPanel ---
         JPanel redLine = new JPanel();
@@ -473,7 +511,7 @@ public class TransitQGUI extends JFrame {
 
         JLabel titleLabel = new JLabel("ASSIGN PASSENGER AREA", SwingConstants.CENTER);
         titleLabel.setForeground(Color.WHITE);
-        titleLabel.setFont(new Font("Arial", Font.BOLD, 26));
+        titleLabel.setFont(new Font("Arial", Font.BOLD, 18));
         titleLabel.setBorder(BorderFactory.createEmptyBorder(6, 0, 8, 0));
         container.add(titleLabel, BorderLayout.NORTH);
 
@@ -535,14 +573,13 @@ public class TransitQGUI extends JFrame {
 
     /**
      * Creates a custom passenger icon with ID/Name label and a silhouette.
-     * 
+     *
      * @param nameText    The passenger's name.
      * @param textColor   The color for the ID/Name text.
      * @param passengerId The passenger's unique ID.
      * @return A JPanel representing the passenger.
      */
     private JPanel createPassengerIcon(String nameText, Color textColor, int passengerId) {
-        // Simple hash-based color assignment for the silhouette
         Color silhouetteColor = generateColorFromId(passengerId);
 
         // Use current content width to calculate icon size dynamically
