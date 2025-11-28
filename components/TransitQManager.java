@@ -1,3 +1,4 @@
+// In TransitQManager.java - Update the class with new bus management logic
 package components;
 
 import java.util.LinkedList;
@@ -6,6 +7,7 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.LinkedHashMap;
 
 public class TransitQManager {
     private Queue<Passenger> ticketAreaQueue;
@@ -16,20 +18,31 @@ public class TransitQManager {
     private final int ASSIGN_AREA_DISPLAY_CAPACITY = 15;
     private Map<String, Bus> buses;
     private String currentlyAssignedBusName;
+    private List<String> busOrder; // Maintain bus order for rotation
+    private List<String> availableBusNames; // New bus names for rotation
 
     public TransitQManager() {
         this.ticketAreaQueue = new LinkedList<>();
         this.assignAreaQueue = new LinkedList<>();
         this.servedLog = new ArrayList<>();
 
-        this.buses = new HashMap<>();
+        // Initialize buses in order
+        this.buses = new LinkedHashMap<>();
         buses.put("BUS A", new Bus("BUS A", 10));
         buses.put("BUS B", new Bus("BUS B", 10));
         buses.put("BUS C", new Bus("BUS C", 10));
         buses.put("BUS D", new Bus("BUS D", 10));
 
-        this.currentlyAssignedBusName = "BUS A";
+        // Initialize bus order
+        this.busOrder = new ArrayList<>(buses.keySet());
+        this.currentlyAssignedBusName = busOrder.get(0); // First bus is assigned
 
+        // Initialize available bus names for rotation
+        this.availableBusNames = new ArrayList<>();
+        availableBusNames.add("BUS E");
+        availableBusNames.add("BUS F");
+        availableBusNames.add("BUS G");
+        availableBusNames.add("BUS H");
     }
 
     // --- Core Operations ---
@@ -71,12 +84,11 @@ public class TransitQManager {
         }
 
         if (assignedBus.getCurrentLoad() >= assignedBus.getCapacity()) {
-            return "ALERT: " + assignedBus.getName() + " is full! Change assigned bus or wait.";
+            return "ALERT: " + assignedBus.getName() + " is full! Please depart the bus.";
         }
 
         Passenger boarded = assignAreaQueue.poll();
         if (boarded != null) {
-            // Use return value of boardPassenger to be safe
             boolean boardedOk = assignedBus.boardPassenger();
             if (boardedOk) {
                 servedLog.add(boarded);
@@ -84,13 +96,64 @@ public class TransitQManager {
                         +
                         ". Load: " + assignedBus.getCurrentLoad() + "/" + assignedBus.getCapacity();
             } else {
-                // In case bus was filled between checks, put passenger back to the assign area
                 assignAreaQueue.offer(boarded);
                 return "ALERT: " + assignedBus.getName()
                         + " became full before boarding. Passenger returned to assign area.";
             }
         }
         return "ERROR: Failed to board passenger (unexpected error).";
+    }
+
+    // --- Enhanced Bus Departure Logic ---
+    public String departBus() {
+        Bus currentBus = buses.get(currentlyAssignedBusName);
+
+        if (currentBus == null) {
+            return "ERROR: No bus to depart.";
+        }
+
+        if (currentBus.getCurrentLoad() == 0) {
+            return "ALERT: " + currentBus.getName() + " is empty. No need to depart.";
+        }
+
+        // Record departure
+        String departureMessage = "DEPARTED: " + currentBus.getName() + " has departed with " +
+                currentBus.getCurrentLoad() + " passengers.";
+
+        // Reset the departed bus
+        currentBus.resetBus();
+
+        // Remove the departed bus from the queue
+        String departedBusName = busOrder.remove(0);
+
+        // Add new bus if available, otherwise add the departed bus back to the end
+        if (!availableBusNames.isEmpty()) {
+            String newBusName = availableBusNames.remove(0);
+            buses.put(newBusName, new Bus(newBusName, 10));
+            busOrder.add(newBusName);
+        } else {
+            // If no new buses available, put the departed bus at the end
+            busOrder.add(departedBusName);
+        }
+
+        // Assign the new first bus
+        currentlyAssignedBusName = busOrder.get(0);
+
+        return departureMessage + " New active bus: " + currentlyAssignedBusName;
+    }
+
+    public boolean canDepartBus() {
+        Bus currentBus = buses.get(currentlyAssignedBusName);
+        return currentBus != null && currentBus.isFull();
+    }
+
+    public boolean isCurrentBusFull() {
+        Bus currentBus = buses.get(currentlyAssignedBusName);
+        return currentBus != null && currentBus.getCurrentLoad() >= currentBus.getCapacity();
+    }
+
+    public List<String> getBusOrder() {
+        return new ArrayList<>(busOrder);
     }
 
     // --- Utility Methods ---

@@ -1,3 +1,4 @@
+// In Bus.java - Add the isFull() method
 package components;
 
 public class Bus {
@@ -11,6 +12,25 @@ public class Bus {
         this.currentLoad = 0;
     }
 
+    public boolean boardPassenger() {
+        if (currentLoad < capacity) {
+            currentLoad++;
+            return true;
+        }
+        return false;
+    }
+
+    // Add reset method
+    public void resetBus() {
+        this.currentLoad = 0;
+    }
+
+    // Add isFull method
+    public boolean isFull() {
+        return currentLoad >= capacity;
+    }
+
+    // Getters
     public String getName() {
         return name;
     }
@@ -21,28 +41,5 @@ public class Bus {
 
     public int getCurrentLoad() {
         return currentLoad;
-    }
-
-    // Returns true if boarding succeeds, false if bus is full
-    public boolean boardPassenger() {
-        if (currentLoad < capacity) {
-            currentLoad++;
-            return true; // boarding successful
-        }
-        return false; // bus is full
-    }
-
-    public void resetLoad() {
-        currentLoad = 0;
-    }
-
-    @Override
-    public String toString() {
-        return name + " (" + currentLoad + "/" + capacity + ")";
-    }
-
-    public void addPassenger(Passenger p) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'addPassenger'");
     }
 }
