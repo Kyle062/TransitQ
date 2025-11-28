@@ -1,12 +1,13 @@
 package ui;
 
 import javax.swing.*;
+import components.Passenger;
+import components.TransitQManager;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.font.TextAttribute;
 import java.awt.geom.RoundRectangle2D;
-import java.awt.geom.RoundRectangle2D.Float;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import javax.imageio.ImageIO;
@@ -16,7 +17,19 @@ import java.util.Map;
 
 public class LoginForm extends JFrame {
 
+    TransitQManager manager = new TransitQManager();
+    private TransitQGUI mainGUI; // Reference to main application
+
     public LoginForm() {
+        this(null);
+    }
+
+    public LoginForm(TransitQGUI mainGUI) {
+        this.mainGUI = mainGUI;
+        initializeUI();
+    }
+
+    private void initializeUI() {
         setTitle("Transit IQ Login");
         int frameWidth = 1250;
         int frameHeight = 900;
@@ -62,7 +75,7 @@ public class LoginForm extends JFrame {
         ImageIcon rightTopIcon = new ImageIcon(rightTopImage);
 
         JLabel imageLabel = new JLabel(rightTopIcon);
-        imageLabel.setBounds(150, 5, 150, 150); 
+        imageLabel.setBounds(150, 5, 150, 150);
         rightPanel.add(imageLabel);
 
         JLabel welcomeLabel = new JLabel("Welcome to TransitQ", SwingConstants.CENTER);
@@ -71,7 +84,7 @@ public class LoginForm extends JFrame {
         welcomeLabel.setBounds(30, 110, 400, 40);
         rightPanel.add(welcomeLabel);
 
-        JLabel welcomeLabel2 = new JLabel("Please fill the fields bellow to register as passenger",
+        JLabel welcomeLabel2 = new JLabel("Please fill the fields below to register as passenger",
                 SwingConstants.CENTER);
         welcomeLabel2.setForeground(Color.black);
         welcomeLabel2.setFont(new Font("SansSerif", Font.PLAIN, 16));
@@ -118,12 +131,12 @@ public class LoginForm extends JFrame {
         rightPanel.add(contaField);
 
         // Passenger Types
-        JLabel passengerLabel = new JLabel("Passenger Type: ");
+        JLabel passengerLabel = new JLabel("Ticket Type: ");
         passengerLabel.setFont(new Font("SansSerif", Font.BOLD, 16));
         passengerLabel.setBounds(55, 360, 200, 20);
         rightPanel.add(passengerLabel);
 
-        String passengerTypes[] = { "Child", "Teenager", "Adult", "Senior", "Student" };
+        String passengerTypes[] = { "Standard", "Discounted", "Vip" };
         JComboBox<String> passengerComboBox = new JComboBox<>(passengerTypes);
         passengerComboBox.setBounds(55, 385, 350, 30);
         passengerComboBox.setFont(new Font("SansSerif", Font.BOLD, 16));
@@ -174,19 +187,18 @@ public class LoginForm extends JFrame {
         rightPanel.add(clickAdmin);
         clickAdmin.addMouseListener(new MouseAdapter() {
             @Override
-            public void mouseClicked(MouseEvent e) {                
-                new LoginStationAttendant().setVisible(true);
+            public void mouseClicked(MouseEvent e) {
+                // Open station attendant login with reference to main GUI
+                new LoginStationAttendant(mainGUI).setVisible(true);
                 dispose();
             }
         });
-
         sendButton.addActionListener(e -> {
             int result = JOptionPane.showConfirmDialog(
-                    backgroundPanel, // Parent component
-                    "Are you sure you want to send?", // Message
-                    "Confirmation", // Title
-                    JOptionPane.OK_CANCEL_OPTION // Option type
-            );
+                    backgroundPanel,
+                    "Are you sure you want to send?",
+                    "Confirmation",
+                    JOptionPane.OK_CANCEL_OPTION);
 
             if (result == JOptionPane.OK_OPTION) {
                 String passengerName = nameTextField.getText();
@@ -194,12 +206,18 @@ public class LoginForm extends JFrame {
                 String passengerContact = contaField.getText();
                 String passengerDestination = destinationField.getText();
                 String passengerCash = topayField.getText();
+                Object selectedItemObject = passengerComboBox.getSelectedItem();
+                String selectedPassengerType = (String) selectedItemObject;
 
                 // ERROR MESSAGES
                 if (passengerName.isEmpty() || passengerAge.isEmpty() || passengerContact.isEmpty()
-                        || passengerDestination.isEmpty()) {
+                        || passengerDestination.isEmpty() || passengerCash.isEmpty()) {
                     JOptionPane.showMessageDialog(backgroundPanel, "Please fill out all fields!", "Input Error",
                             JOptionPane.ERROR_MESSAGE);
+                    return;
+                } else if (!passengerContact.matches("\\d{10,15}")) {
+                    JOptionPane.showMessageDialog(backgroundPanel, "Invalid contact number format. Use only digits.",
+                            "Input Error", JOptionPane.ERROR_MESSAGE);
                     return;
                 }
 
@@ -212,14 +230,44 @@ public class LoginForm extends JFrame {
                     return;
                 }
 
-                if (!passengerContact.matches("\\d{10,15}")) {
-                    JOptionPane.showMessageDialog(backgroundPanel, "Invalid contact number format. Use only digits.",
-                            "Input Error", JOptionPane.ERROR_MESSAGE);
-                    return;
+                if (!passengerName.isEmpty() && !passengerAge.isEmpty() && !passengerContact.isEmpty()
+                        && !passengerDestination.isEmpty() && !passengerCash.isEmpty()) {
+
+                    // Create passenger
+                    Passenger p = new Passenger(passengerName, passengerDestination, selectedPassengerType, "Cash",
+                            passengerCash);
+
+                    if (mainGUI != null) {
+                        // Add passenger to main GUI's ticket area
+                        String logMessage = mainGUI.getManager().addPassengerToTicketArea(p);
+                        mainGUI.logOperation(logMessage);
+                        mainGUI.updateVisuals();
+
+                        JOptionPane.showMessageDialog(backgroundPanel,
+                                "Welcome Passenger " + passengerName + "!\nYou have been added to the ticket area.",
+                                "Registration Successful!",
+                                JOptionPane.INFORMATION_MESSAGE);
+
+                        // Clear form after successful submission
+                        nameTextField.setText("");
+                        ageField.setText("");
+                        contaField.setText("");
+                        destinationField.setText("");
+                        topayField.setText("");
+                        passengerComboBox.setSelectedIndex(0);
+
+                    } else {
+                        // Fallback: use local manager
+                        manager.addPassengerToTicketArea(p);
+                        JOptionPane.showMessageDialog(backgroundPanel,
+                                "Welcome Passenger " + passengerName,
+                                "Registration Successful!",
+                                JOptionPane.INFORMATION_MESSAGE);
+                    }
                 }
 
             } else if (result == JOptionPane.CANCEL_OPTION || result == JOptionPane.CLOSED_OPTION) {
-                JOptionPane.showMessageDialog(backgroundPanel, "Cancel or dialog closed. No action taken.");
+                JOptionPane.showMessageDialog(backgroundPanel, "Registration cancelled.");
             }
         });
 
@@ -243,8 +291,8 @@ public class LoginForm extends JFrame {
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
                         RenderingHints.VALUE_ANTIALIAS_ON);
 
-                Float clip = new RoundRectangle2D.Float(0, 0, getWidth(), getHeight(), arcW, arcH);
-                g2.setClip((java.awt.Shape) clip);
+                RoundRectangle2D.Float clip = new RoundRectangle2D.Float(0, 0, getWidth(), getHeight(), arcW, arcH);
+                g2.setClip(clip);
 
                 // Fill with image (if present) or fallback to white
                 if (img != null) {
@@ -281,7 +329,7 @@ public class LoginForm extends JFrame {
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
                         RenderingHints.VALUE_ANTIALIAS_ON);
 
-                Float shape = new RoundRectangle2D.Float(0, 0, getWidth(), getHeight(), arcW, arcH);
+                RoundRectangle2D.Float shape = new RoundRectangle2D.Float(0, 0, getWidth(), getHeight(), arcW, arcH);
                 g2.setColor(Color.WHITE);
                 g2.fill(shape);
 

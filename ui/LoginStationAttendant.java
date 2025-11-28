@@ -6,8 +6,6 @@ import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
-import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter; 
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.font.TextAttribute;
@@ -29,11 +27,17 @@ import javax.swing.JPasswordField;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 
-
 public class LoginStationAttendant extends JFrame {
+    private TransitQGUI mainGUI; // Add this field
 
-    public LoginStationAttendant() {
-        setTitle("Transit IQ Login");
+    // Modify constructor to accept TransitQGUI reference
+    public LoginStationAttendant(TransitQGUI mainGUI) {
+        this.mainGUI = mainGUI;
+        initializeUI();
+    }
+
+    private void initializeUI() {
+        setTitle("Transit IQ Login - Station Attendant");
         int frameWidth = 1250;
         int frameHeight = 900;
 
@@ -74,25 +78,25 @@ public class LoginStationAttendant extends JFrame {
         backgroundPanel.add(rightPanel);
 
         // Right panel Components
-        BufferedImage rightTopImage = loadImage("images/Logo3.png"); // your image path
+        BufferedImage rightTopImage = loadImage("images/Logo3.png");
         ImageIcon rightTopIcon = new ImageIcon(rightTopImage);
 
         JLabel imageLabel = new JLabel(rightTopIcon);
-        imageLabel.setBounds(150, 5, 150, 150); // adjust position & size
+        imageLabel.setBounds(150, 5, 150, 150);
         rightPanel.add(imageLabel);
 
         // Right panel Components
-        JLabel welcomeLabel = new JLabel("Attendant Login", SwingConstants.CENTER); // Changed title
+        JLabel welcomeLabel = new JLabel("Attendant Login", SwingConstants.CENTER);
         welcomeLabel.setForeground(new Color(55, 79, 114));
         welcomeLabel.setFont(new Font("SansSerif", Font.BOLD, 30));
-        welcomeLabel.setBounds(30, 150, 400, 40); // Adjusted Y position
+        welcomeLabel.setBounds(30, 150, 400, 40);
         rightPanel.add(welcomeLabel);
 
         JLabel welcomeLabel2 = new JLabel("Please enter your credentials to access the system",
-                SwingConstants.CENTER); // Changed subtitle
+                SwingConstants.CENTER);
         welcomeLabel2.setForeground(Color.black);
         welcomeLabel2.setFont(new Font("SansSerif", Font.PLAIN, 16));
-        welcomeLabel2.setBounds(30, 180, 400, 40); // Adjusted Y position
+        welcomeLabel2.setBounds(30, 180, 400, 40);
         rightPanel.add(welcomeLabel2);
 
         // --- Station Attendant Login Fields ---
@@ -126,16 +130,17 @@ public class LoginStationAttendant extends JFrame {
         loginButton.setFont(new Font("SansSerif", Font.BOLD, 16));
         rightPanel.add(loginButton);
 
-        JLabel clickAdmin = new JLabel("Are you a Station Attendant?");
-        clickAdmin.setBounds(130, 600, 200, 30);
-        clickAdmin.setFont(new Font("SansSerif", Font.PLAIN, 14));
-        clickAdmin.setForeground(new Color(82, 181, 247));
-        addUnderline(clickAdmin);
-        rightPanel.add(clickAdmin);
-        clickAdmin.addMouseListener(new MouseAdapter() {
+        JLabel clickPassenger = new JLabel("Are you a Passenger?");
+        clickPassenger.setBounds(130, 600, 200, 30);
+        clickPassenger.setFont(new Font("SansSerif", Font.PLAIN, 14));
+        clickPassenger.setForeground(new Color(82, 181, 247));
+        addUnderline(clickPassenger);
+        rightPanel.add(clickPassenger);
+        clickPassenger.addMouseListener(new MouseAdapter() {
             @Override
-            public void mouseClicked(MouseEvent e) { // Correct signature
-                new LoginForm().setVisible(true); // Assuming LoginForm is the correct class name
+            public void mouseClicked(MouseEvent e) {
+                // Go back to passenger login with the same mainGUI reference
+                new LoginForm(mainGUI).setVisible(true);
                 dispose();
             }
         });
@@ -151,11 +156,21 @@ public class LoginStationAttendant extends JFrame {
                 return;
             }
 
-            // --- Your Authentication Logic Goes Here ---
-
+            // Authentication Logic
             if (username.equalsIgnoreCase("admin") && password.equalsIgnoreCase("admin123")) {
                 JOptionPane.showMessageDialog(rightPanel, "Login Successful! Welcome, Attendant.", "Success",
                         JOptionPane.INFORMATION_MESSAGE);
+
+                // Use the existing mainGUI instance instead of creating a new one
+                if (mainGUI != null) {
+                    mainGUI.setVisible(true);
+                    mainGUI.setExtendedState(JFrame.MAXIMIZED_BOTH);
+                    dispose();
+                } else {
+                    // Fallback: create new instance if mainGUI is null
+                    new TransitQGUI().setVisible(true);
+                    dispose();
+                }
 
             } else {
                 JOptionPane.showMessageDialog(rightPanel, "Invalid username or password.", "Login Error",
@@ -163,10 +178,10 @@ public class LoginStationAttendant extends JFrame {
             }
         });
 
+        setVisible(true);
     }
 
-    // --- Helper Methods (Included for completeness) ---
-
+    // ... rest of your helper methods remain the same ...
     private BufferedImage loadImage(String path) {
         try {
             return ImageIO.read(new File(path));
@@ -185,7 +200,6 @@ public class LoginStationAttendant extends JFrame {
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
                         RenderingHints.VALUE_ANTIALIAS_ON);
 
-                // Need to use java.awt.Shape here for setClip compatibility
                 java.awt.Shape clip = new RoundRectangle2D.Float(0, 0, getWidth(), getHeight(), arcW, arcH);
                 g2.setClip(clip);
 
@@ -245,6 +259,7 @@ public class LoginStationAttendant extends JFrame {
             }
         };
     }
+
     private void addUnderline(JLabel label) {
         if (label == null) {
             return;
@@ -257,10 +272,4 @@ public class LoginStationAttendant extends JFrame {
 
         label.setFont(font.deriveFont(attributes));
     }
-
-    public static void main(String[] args) {
-        new LoginStationAttendant().setVisible(true);;
-    }
-
-
 }

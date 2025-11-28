@@ -30,52 +30,6 @@ public class TransitQManager {
 
         this.currentlyAssignedBusName = "BUS A";
 
-        // Seed predefined passengers so UI starts with some data
-        seedPredefinedPassengers();
-    }
-
-    private void seedPredefinedPassengers() {
-        // Only add if there's space (and avoid seeding multiple times if constructor
-        // called repeatedly)
-        if (ticketAreaQueue.size() >= TICKET_AREA_CAPACITY)
-            return;
-
-        // Passenger 1-3 (Your original pattern)
-        Passenger p1 = new Passenger("Alice Santos", "Downtown", "Standard", "Cash");
-        Passenger p2 = new Passenger("Mark Ruiz", "Airport", "VIP", "Card");
-        Passenger p3 = new Passenger("Carla Reyes", "Market", "Discounted", "Cash");
-
-        // Passenger 4-6 (Repeating the pattern)
-        Passenger p4 = new Passenger("Alice Santos", "Downtown", "Standard", "Cash");
-        Passenger p5 = new Passenger("Mark Ruiz", "Airport", "VIP", "Card");
-        Passenger p6 = new Passenger("Carla Reyes", "Market", "Discounted", "Cash");
-
-        // Passenger 7-9
-        Passenger p7 = new Passenger("Alice Santos", "Downtown", "Standard", "Cash");
-        Passenger p8 = new Passenger("Mark Ruiz", "Airport", "VIP", "Card");
-        Passenger p9 = new Passenger("Carla Reyes", "Market", "Discounted", "Cash");
-
-        // Passenger 10-12
-        Passenger p10 = new Passenger("Alice Santos", "Downtown", "Standard", "Cash");
-        Passenger p11 = new Passenger("Mark Ruiz", "Airport", "VIP", "Card");
-        Passenger p12 = new Passenger("Carla Reyes", "Market", "Discounted", "Cash");
-
-      
-
-        // Offer them into queue while capacity permits
-        addPassengerToTicketArea(p1);
-        addPassengerToTicketArea(p2);
-        addPassengerToTicketArea(p3);
-        addPassengerToTicketArea(p4);
-        addPassengerToTicketArea(p5);
-        addPassengerToTicketArea(p6);
-        addPassengerToTicketArea(p7);
-        addPassengerToTicketArea(p8);
-        addPassengerToTicketArea(p9);
-        addPassengerToTicketArea(p10);
-        addPassengerToTicketArea(p11);
-        addPassengerToTicketArea(p12);
-       
     }
 
     // --- Core Operations ---

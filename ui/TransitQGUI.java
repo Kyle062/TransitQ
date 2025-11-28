@@ -1,6 +1,5 @@
 package ui;
 
-
 import javax.swing.*;
 
 import components.Bus;
@@ -11,7 +10,6 @@ import java.awt.*;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseMotionAdapter;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.util.Collection;
@@ -61,6 +59,17 @@ public class TransitQGUI extends JFrame {
     private int CURRENT_CONTENT_WIDTH;
     private int CURRENT_CONTENT_HEIGHT;
     private final int LOG_PANEL_PREFERRED_HEIGHT;
+
+    public TransitQManager getManager() {
+        return manager;
+    }
+
+    // Make logOperation public so LoginForm can use it
+    public void logOperation(String message) {
+        String timestamp = java.time.LocalTime.now().format(java.time.format.DateTimeFormatter.ofPattern("HH:mm:ss"));
+        logArea.append("\n[" + timestamp + "] " + message);
+        logArea.setCaretPosition(logArea.getDocument().getLength());
+    }
 
     public TransitQGUI() {
         // Apply Nimbus Look and Feel first for a modern look
@@ -657,6 +666,7 @@ public class TransitQGUI extends JFrame {
 
         JTextField nameField = new JTextField(15);
         JTextField destField = new JTextField(15);
+        JTextField moneyField = new JTextField(15); // Add money field
         String[] ticketTypes = { "Standard", "Discounted", "VIP" };
         JComboBox<String> ticketTypeCombo = new JComboBox<>(ticketTypes);
 
@@ -666,6 +676,8 @@ public class TransitQGUI extends JFrame {
         formPanel.add(destField);
         formPanel.add(new JLabel("Ticket Type:"));
         formPanel.add(ticketTypeCombo);
+        formPanel.add(new JLabel("Money Paid:"));
+        formPanel.add(moneyField); // Add money field to form
 
         // Customizing JOptionPane colors to match the theme (if L&F allows)
         UIManager.put("OptionPane.background", Color.LIGHT_GRAY);
@@ -679,15 +691,30 @@ public class TransitQGUI extends JFrame {
 
         if (result == JOptionPane.OK_OPTION) {
             // Check for empty fields
-            if (nameField.getText().trim().isEmpty() || destField.getText().trim().isEmpty()) {
-                JOptionPane.showMessageDialog(this, "Name and Destination cannot be empty.", "Input Error",
+            if (nameField.getText().trim().isEmpty() || destField.getText().trim().isEmpty()
+                    || moneyField.getText().trim().isEmpty()) {
+                JOptionPane.showMessageDialog(this, "Name, Destination, and Money Paid cannot be empty.", "Input Error",
                         JOptionPane.ERROR_MESSAGE);
                 return;
             }
-            // Assume Passenger constructor is correct
-            // NOTE: The ID assignment should happen inside the manager class.
+
+            // Validate money is a valid number
+            try {
+                double money = Double.parseDouble(moneyField.getText().trim());
+                if (money < 0) {
+                    JOptionPane.showMessageDialog(this, "Money paid cannot be negative.", "Input Error",
+                            JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+            } catch (NumberFormatException e) {
+                JOptionPane.showMessageDialog(this, "Please enter a valid amount for money paid.", "Input Error",
+                        JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            // Create passenger with money information
             Passenger p = new Passenger(nameField.getText(), destField.getText(),
-                    (String) ticketTypeCombo.getSelectedItem(), "Cash");
+                    (String) ticketTypeCombo.getSelectedItem(), "Cash", moneyField.getText().trim());
             String logMessage = manager.addPassengerToTicketArea(p);
             logOperation(logMessage);
             updateVisuals();
@@ -732,7 +759,7 @@ public class TransitQGUI extends JFrame {
             logOperation("SEARCH: Found Passenger ID " + p.getPassengerId() + " (" + p.getName() + ")");
             JOptionPane.showMessageDialog(this,
                     "Found Passenger:\nID: " + p.getPassengerId() + "\nName: " + p.getName() +
-                            "\nDestination: " + p.getDestination() + "\nTicket Type: " + p.getTicketType(),
+                            "\nDestination: " + p.getDestination() + "\nTicket Type: " + p.getTicketType() + "\nCash: " + p.getMoneyPaid()   ,
                     "Search Result", JOptionPane.INFORMATION_MESSAGE);
         } else {
             logOperation("SEARCH: Passenger '" + searchInput.trim() + "' not found in active queues.");
@@ -882,7 +909,7 @@ public class TransitQGUI extends JFrame {
     }
 
     // --- Visual Update Method ---
-    private void updateVisuals() {
+    public void updateVisuals() {
         // Update the name of the pulsing bus based on manager state
         pulsingBusName = manager.getCurrentlyAssignedBusName();
 
@@ -930,13 +957,4 @@ public class TransitQGUI extends JFrame {
         repaint();
     }
 
-    private void logOperation(String message) {
-        String timestamp = java.time.LocalTime.now().format(java.time.format.DateTimeFormatter.ofPattern("HH:mm:ss"));
-        logArea.append("\n[" + timestamp + "] " + message);
-        logArea.setCaretPosition(logArea.getDocument().getLength());
-    }
-
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(TransitQGUI::new);
-    }
 }
