@@ -264,7 +264,7 @@ public class TransitQGUI extends JFrame {
         int busW = 160;
         int busH = 160;
         int busStartX = 100;
-        int busStartY = 100;
+        int busStartY = 20;
         int busGap = 30;
 
         // Get current bus order and position them in a vertical line
