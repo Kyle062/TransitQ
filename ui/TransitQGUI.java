@@ -279,6 +279,19 @@ public class TransitQGUI extends JFrame {
                     int busY = busStartY + (i * (busH + busGap));
                     busPanel.setBounds(busStartX, busY, busW, busH);
                     busPanel.setVisible(true);
+
+                    // Debug positioning
+                    System.out.println("Positioning " + busName + " at Y: " + busY);
+                } else {
+                    System.out.println("ERROR: Bus panel not found for: " + busName);
+                }
+            }
+
+            // Hide any buses that are not in the current order
+            for (String busName : busPanels.keySet()) {
+                if (!busOrder.contains(busName)) {
+                    busPanels.get(busName).setVisible(false);
+                    System.out.println("Hiding bus: " + busName);
                 }
             }
         }
@@ -401,7 +414,7 @@ public class TransitQGUI extends JFrame {
         updateVisuals();
     }
 
-    // --- Bus Panel with Queue Logic ---
+    // --- Updated Bus Panel with better debugging ---
     private JPanel createBusPanel(String name) {
         JPanel panel = new JPanel() {
             @Override
@@ -451,7 +464,11 @@ public class TransitQGUI extends JFrame {
         String displayName = name.toUpperCase();
         JLabel label = new JLabel("<html><center>" + displayName + "<br>(0/10)</center></html>", SwingConstants.CENTER);
         label.setFont(new Font("Arial", Font.BOLD, 18));
+        label.setForeground(Color.BLACK); // Ensure text is visible
         panel.add(label, BorderLayout.CENTER);
+
+        // Debug: Print when bus panel is created
+        System.out.println("Created bus panel for: " + name);
 
         return panel;
     }
@@ -468,14 +485,19 @@ public class TransitQGUI extends JFrame {
 
         // Update bus capacities and colors
         for (Map.Entry<String, JPanel> entry : busPanels.entrySet()) {
-            Bus bus = manager.getBuses().get(entry.getKey());
+            String busName = entry.getKey();
+            JPanel busPanel = entry.getValue();
+            Bus bus = manager.getBuses().get(busName);
+
             if (bus != null) {
-                JLabel label = (JLabel) entry.getValue().getComponent(0);
+                JLabel label = (JLabel) busPanel.getComponent(0);
                 label.setText("<html><center>" + bus.getName() + "<br>(" + bus.getCurrentLoad() + "/"
                         + bus.getCapacity() + ")</center></html>");
 
                 // Repaint to update colors
-                entry.getValue().repaint();
+                busPanel.repaint();
+            } else {
+                System.out.println("WARNING: Bus " + busName + " not found in manager!");
             }
         }
 
@@ -533,6 +555,14 @@ public class TransitQGUI extends JFrame {
         if (result == JOptionPane.OK_OPTION) {
             String departureMessage = manager.departBus();
             logOperation(departureMessage);
+            debugBusState();
+
+            // Get the updated bus order after departure
+            java.util.List<String> newBusOrder = manager.getBusOrder();
+
+            // Debug: Print current bus state
+            System.out.println("After departure - Bus order: " + newBusOrder);
+            System.out.println("Current assigned bus: " + manager.getCurrentlyAssignedBusName());
 
             // Check if a new bus was generated
             String newBusName = manager.getNewlyGeneratedBus();
@@ -543,6 +573,9 @@ public class TransitQGUI extends JFrame {
                     addNewBusPanel(newBusName, innerRightPanel);
                 }
             }
+
+            // Force update all bus panels to reflect new order and status
+            updateAllBusPanels();
 
             updateVisuals();
 
@@ -986,6 +1019,47 @@ public class TransitQGUI extends JFrame {
     private void clearLogsAction() {
         logArea.setText("");
         logOperation("LOGS: Operation logs cleared by user.");
+    }
+
+    private void updateAllBusPanels() {
+        // Remove all existing bus panels
+        JPanel innerRightPanel = findInnerRightPanel();
+        if (innerRightPanel != null) {
+            for (JPanel busPanel : busPanels.values()) {
+                innerRightPanel.remove(busPanel);
+            }
+            busPanels.clear();
+
+            // Recreate all bus panels in the correct order
+            for (String busName : manager.getBusOrder()) {
+                JPanel busPanel = createBusPanel(busName);
+                busPanels.put(busName, busPanel);
+                innerRightPanel.add(busPanel);
+            }
+
+            innerRightPanel.revalidate();
+            innerRightPanel.repaint();
+        }
+    }
+
+    // --- Debug method to check bus state ---
+    private void debugBusState() {
+        System.out.println("=== DEBUG BUS STATE ===");
+        System.out.println("Current assigned bus: " + manager.getCurrentlyAssignedBusName());
+        System.out.println("Bus order: " + manager.getBusOrder());
+        System.out.println("Bus panels in GUI: " + busPanels.keySet());
+
+        Map<String, Bus> buses = manager.getBuses();
+        for (String busName : manager.getBusOrder()) {
+            Bus bus = buses.get(busName);
+            if (bus != null) {
+                System.out.println(busName + ": " + bus.getCurrentLoad() + "/" + bus.getCapacity() +
+                        " (Full: " + bus.isFull() + ")");
+            } else {
+                System.out.println(busName + ": NOT FOUND IN MANAGER!");
+            }
+        }
+        System.out.println("======================");
     }
 
     // Main method
