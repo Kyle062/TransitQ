@@ -205,7 +205,7 @@ public class TransitQGUI extends JFrame {
         // ---------- Ticket Area ----------
         if (ticketAreaContainer != null) {
             int ticketW = 450;
-            int ticketH = 400;
+            int ticketH = 450;
             int ticketX = innerW - 500;
             int ticketY = 80;
             ticketAreaContainer.setBounds(ticketX, ticketY, ticketW, ticketH);
