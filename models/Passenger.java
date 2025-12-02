@@ -1,4 +1,4 @@
-package components;
+package models;
 
 public class Passenger {
     private static int nextId = 1001;

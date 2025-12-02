@@ -1,4 +1,4 @@
-package components;
+package models;
 
 import java.util.LinkedList;
 import java.util.Queue;

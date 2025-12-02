@@ -1,9 +1,11 @@
 package ui;
 
 import javax.swing.*;
-import components.Bus;
-import components.Passenger;
-import components.TransitQManager;
+
+import models.Bus;
+import models.Passenger;
+import models.TransitQManager;
+
 import java.awt.*;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;

@@ -1,5 +1,5 @@
 // In Bus.java - Add the isFull() method
-package components;
+package models;
 
 public class Bus {
     private String name;
