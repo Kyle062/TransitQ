@@ -20,7 +20,7 @@ public class TransitQManager {
     private List<String> busOrder; // Maintain bus order for rotation
     private List<String> availableBusNames; // New bus names for rotation
     private String newlyGeneratedBus; // Track newly generated bus for GUI updates
-    
+
     // Predefined passengers
     private List<Passenger> predefinedPassengers;
 
@@ -48,12 +48,12 @@ public class TransitQManager {
         availableBusNames.add("BUS H");
         availableBusNames.add("BUS I");
         availableBusNames.add("BUS J");
-        
+
         this.newlyGeneratedBus = null;
-        
+
         // Initialize predefined passengers
         this.predefinedPassengers = createPredefinedPassengers();
-        
+
         // Add some predefined passengers to ticket area initially
         initializeWithPredefinedPassengers();
     }
@@ -61,7 +61,7 @@ public class TransitQManager {
     // --- Predefined Passengers Creation ---
     private List<Passenger> createPredefinedPassengers() {
         List<Passenger> passengers = new ArrayList<>();
-        
+
         passengers.add(new Passenger("John Smith", "Downtown", "Standard", "Cash", "50.00"));
         passengers.add(new Passenger("Maria Garcia", "Airport", "VIP", "Cash", "120.00"));
         passengers.add(new Passenger("David Johnson", "University", "Discounted", "Cash", "35.00"));
@@ -74,10 +74,10 @@ public class TransitQManager {
         passengers.add(new Passenger("Jennifer Anderson", "City Center", "Standard", "Cash", "48.00"));
         passengers.add(new Passenger("Thomas Martinez", "Amusement Park", "Discounted", "Cash", "42.00"));
         passengers.add(new Passenger("Susan Thompson", "Business District", "Standard", "Cash", "65.00"));
-        
+
         return passengers;
     }
-    
+
     // --- Initialize with some predefined passengers ---
     private void initializeWithPredefinedPassengers() {
         // Add first 5 passengers to ticket area
@@ -88,38 +88,38 @@ public class TransitQManager {
             }
         }
     }
-    
+
     // --- Method to add predefined passengers to ticket area ---
     public String addPredefinedPassengers(int count) {
         if (predefinedPassengers.isEmpty()) {
             return "ALERT: No more predefined passengers available.";
         }
-        
+
         int added = 0;
         int failed = 0;
-        
+
         for (Passenger passenger : predefinedPassengers) {
-            if (added >= count) break;
-            
+            if (added >= count)
+                break;
+
             // Check if passenger is already in any queue
             boolean alreadyInSystem = isPassengerInSystem(passenger);
-            
+
             if (!alreadyInSystem && ticketAreaQueue.size() < TICKET_AREA_CAPACITY) {
                 // Create a copy to avoid reference issues
                 Passenger newPassenger = new Passenger(
-                    passenger.getName(),
-                    passenger.getDestination(),
-                    passenger.getTicketType(),
-                    "Cash",
-                    passenger.getMoneyPaid()
-                );
+                        passenger.getName(),
+                        passenger.getDestination(),
+                        passenger.getTicketType(),
+                        "Cash",
+                        passenger.getMoneyPaid());
                 ticketAreaQueue.offer(newPassenger);
                 added++;
             } else if (alreadyInSystem) {
                 failed++;
             }
         }
-        
+
         String message = "ADDED: " + added + " predefined passenger(s) to Ticket Area.";
         if (failed > 0) {
             message += " " + failed + " passenger(s) were already in the system.";
@@ -127,39 +127,39 @@ public class TransitQManager {
         if (ticketAreaQueue.size() >= TICKET_AREA_CAPACITY) {
             message += " Ticket Area is now full.";
         }
-        
+
         return message;
     }
-    
+
     // --- Check if passenger is already in the system ---
     private boolean isPassengerInSystem(Passenger passenger) {
         // Check ticket area
         for (Passenger p : ticketAreaQueue) {
-            if (p.getName().equals(passenger.getName()) && 
-                p.getDestination().equals(passenger.getDestination())) {
+            if (p.getName().equals(passenger.getName()) &&
+                    p.getDestination().equals(passenger.getDestination())) {
                 return true;
             }
         }
-        
+
         // Check assign area
         for (Passenger p : assignAreaQueue) {
-            if (p.getName().equals(passenger.getName()) && 
-                p.getDestination().equals(passenger.getDestination())) {
+            if (p.getName().equals(passenger.getName()) &&
+                    p.getDestination().equals(passenger.getDestination())) {
                 return true;
             }
         }
-        
+
         // Check served log
         for (Passenger p : servedLog) {
-            if (p.getName().equals(passenger.getName()) && 
-                p.getDestination().equals(passenger.getDestination())) {
+            if (p.getName().equals(passenger.getName()) &&
+                    p.getDestination().equals(passenger.getDestination())) {
                 return true;
             }
         }
-        
+
         return false;
     }
-    
+
     // --- Get remaining predefined passengers count ---
     public int getRemainingPredefinedPassengers() {
         int available = 0;
@@ -170,23 +170,23 @@ public class TransitQManager {
         }
         return available;
     }
-    
+
     // --- Get all predefined passengers info ---
     public String getPredefinedPassengersInfo() {
         StringBuilder info = new StringBuilder();
         info.append("=== Predefined Passengers (Total: ").append(predefinedPassengers.size()).append(") ===\n");
-        
+
         for (int i = 0; i < predefinedPassengers.size(); i++) {
             Passenger p = predefinedPassengers.get(i);
             boolean inSystem = isPassengerInSystem(p);
             String status = inSystem ? "[IN SYSTEM]" : "[AVAILABLE]";
-            
+
             info.append(i + 1).append(". ").append(status).append(" ")
-                .append(p.getName()).append(" -> ").append(p.getDestination())
-                .append(" (").append(p.getTicketType()).append(") - ₱").append(p.getMoneyPaid())
-                .append("\n");
+                    .append(p.getName()).append(" -> ").append(p.getDestination())
+                    .append(" (").append(p.getTicketType()).append(") - ₱").append(p.getMoneyPaid())
+                    .append("\n");
         }
-        
+
         return info.toString();
     }
 
@@ -368,7 +368,7 @@ public class TransitQManager {
                 return "REMOVE: Passenger ID " + id + " removed from TICKET AREA.";
             }
         }
-        
+
         // Remove from assign area
         for (Passenger p : assignAreaQueue) {
             if (p.getPassengerId() == id) {
@@ -430,18 +430,18 @@ public class TransitQManager {
         for (String busName : busOrder) {
             Bus bus = buses.get(busName);
             if (bus != null) {
-                System.out.println(busName + ": " + bus.getCurrentLoad() + "/" + bus.getCapacity() + 
-                                 " (Full: " + bus.isFull() + ")");
+                System.out.println(busName + ": " + bus.getCurrentLoad() + "/" + bus.getCapacity() +
+                        " (Full: " + bus.isFull() + ")");
             }
         }
         System.out.println("==================");
     }
-    
+
     // --- New methods for predefined passengers ---
     public List<Passenger> getPredefinedPassengers() {
         return new ArrayList<>(predefinedPassengers);
     }
-    
+
     public boolean hasAvailablePredefinedPassengers() {
         return getRemainingPredefinedPassengers() > 0;
     }

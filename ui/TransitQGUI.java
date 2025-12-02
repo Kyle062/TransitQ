@@ -182,11 +182,11 @@ public class TransitQGUI extends JFrame {
         // ---------- ASSIGN PASSENGER AREA ----------
         for (Component comp : innerRightPanel.getComponents()) {
             if (comp instanceof JPanel && "ASSIGN_AREA_TOP_LEVEL".equals(comp.getName())) {
-                int assignW = 400;
+                int assignW = 500;
                 int assignH = 420;
-                int assignX = (innerW / 2) - (assignW / 2) + 60;
+                int assignX = (innerW / 2) - (assignW / 2) ;
                 int assignY = 20;
-                comp.setBounds(assignX, assignY, assignW, assignH);
+                comp.setBounds(assignX - 50, assignY, assignW, assignH);
                 break;
             }
         }
@@ -263,13 +263,12 @@ public class TransitQGUI extends JFrame {
 
     // --- Updated method to position buses dynamically ---
     private void updateBusPositions(JPanel innerRightPanel) {
-        int busW = 160;
-        int busH = 160;
-        int busStartX = 100;
+        int busW = 150;
+        int busH = 150;
+        int busStartX = 180;
         int busStartY = 20;
-        int busGap = 30;
+        int busGap = 20;
 
-        // Get current bus order and position them in a vertical line
         java.util.List<String> busOrder = manager.getBusOrder();
 
         if (busPanels != null) {
