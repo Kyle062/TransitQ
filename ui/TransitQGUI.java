@@ -184,7 +184,7 @@ public class TransitQGUI extends JFrame {
             if (comp instanceof JPanel && "ASSIGN_AREA_TOP_LEVEL".equals(comp.getName())) {
                 int assignW = 500;
                 int assignH = 420;
-                int assignX = (innerW / 2) - (assignW / 2) ;
+                int assignX = (innerW / 2) - (assignW / 2);
                 int assignY = 20;
                 comp.setBounds(assignX - 50, assignY, assignW, assignH);
                 break;
@@ -195,7 +195,7 @@ public class TransitQGUI extends JFrame {
         for (Component comp : innerRightPanel.getComponents()) {
             if (comp instanceof JPanel && "RED_SEPARATOR".equals(comp.getName())) {
                 int sepW = 14;
-                int sepX = innerW - 380;
+                int sepX = innerW - 530;
                 int sepY = 30;
                 comp.setBounds(sepX, sepY, sepW, innerH - 110);
                 break;
@@ -206,7 +206,7 @@ public class TransitQGUI extends JFrame {
         if (ticketAreaContainer != null) {
             int ticketW = 450;
             int ticketH = 400;
-            int ticketX = innerW - 330;
+            int ticketX = innerW - 500;
             int ticketY = 80;
             ticketAreaContainer.setBounds(ticketX, ticketY, ticketW, ticketH);
         }
