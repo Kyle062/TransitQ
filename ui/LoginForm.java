@@ -20,7 +20,7 @@ import java.util.Map;
 public class LoginForm extends JFrame {
 
     TransitQManager manager = new TransitQManager();
-    private TransitQGUI mainGUI; // Reference to main application
+    private TransitQGUI mainGUI;
 
     public LoginForm() {
         this(null);

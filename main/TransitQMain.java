@@ -8,9 +8,9 @@ public class TransitQMain {
        
             TransitQGUI mainApp = new TransitQGUI();
             mainApp.setVisible(false);
-
+    
             LoginForm loginForm = new LoginForm(mainApp);
             loginForm.setVisible(true);
        
     }
-}
+}   
