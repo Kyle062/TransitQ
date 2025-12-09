@@ -1,11 +1,9 @@
 package ui;
 
 import javax.swing.*;
-
 import models.Bus;
 import models.Passenger;
 import models.TransitQManager;
-
 import java.awt.*;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
@@ -19,15 +17,16 @@ import java.util.Queue;
 public class TransitQGUI extends JFrame {
     private TransitQManager manager = new TransitQManager();
     private JTextArea logArea;
-
     private JPanel assignAreaVisPanel;
     private JPanel ticketAreaVisPanel;
     private JPanel ticketAreaContainer;
     private JButton departBusButton;
     private JButton boardButton;
-
     private Map<String, JPanel> busPanels;
-    private String pulsingBusName = null;
+
+    // Timer for blinking indicators
+    private javax.swing.Timer blinkTimer;
+    private boolean blinkState = true;
 
     // The moveable button reference
     private JButton addToBusButton;
@@ -51,6 +50,7 @@ public class TransitQGUI extends JFrame {
     private final Color ASSIGN_AREA_ID_TEXT = Color.LIGHT_GRAY;
     private final Color LOG_BG_DARK_GRAY = new Color(34, 34, 34);
     private final Color PULSE_COLOR = new Color(0, 255, 255);
+    private final Color FIRST_IN_QUEUE_COLOR = new Color(0, 255, 0, 150); // Green with transparency
 
     // --- Dynamic Dimensions ---
     private int CURRENT_CONTENT_WIDTH;
@@ -114,8 +114,28 @@ public class TransitQGUI extends JFrame {
             }
         });
 
+        // Start blink timer for queue indicators
+        startBlinkTimer();
+
         setVisible(true);
         updateVisuals();
+    }
+
+    private void startBlinkTimer() {
+        blinkTimer = new javax.swing.Timer(500, e -> {
+            blinkState = !blinkState;
+            updateQueueIndicators();
+        });
+        blinkTimer.start();
+    }
+
+    private void updateQueueIndicators() {
+        if (ticketAreaVisPanel != null) {
+            ticketAreaVisPanel.repaint();
+        }
+        if (assignAreaVisPanel != null) {
+            assignAreaVisPanel.repaint();
+        }
     }
 
     // --- Dynamic Layout Method ---
@@ -185,7 +205,7 @@ public class TransitQGUI extends JFrame {
                 int assignW = 500;
                 int assignH = 420;
                 int assignX = (innerW / 2) - (assignW / 2);
-                int assignY = 20;
+                int assignY = 80;
                 comp.setBounds(assignX - 50, assignY, assignW, assignH);
                 break;
             }
@@ -280,11 +300,6 @@ public class TransitQGUI extends JFrame {
                     int busY = busStartY + (i * (busH + busGap));
                     busPanel.setBounds(busStartX, busY, busW, busH);
                     busPanel.setVisible(true);
-
-                    // Debug positioning
-                    System.out.println("Positioning " + busName + " at Y: " + busY);
-                } else {
-                    System.out.println("ERROR: Bus panel not found for: " + busName);
                 }
             }
 
@@ -292,7 +307,6 @@ public class TransitQGUI extends JFrame {
             for (String busName : busPanels.keySet()) {
                 if (!busOrder.contains(busName)) {
                     busPanels.get(busName).setVisible(false);
-                    System.out.println("Hiding bus: " + busName);
                 }
             }
         }
@@ -357,7 +371,7 @@ public class TransitQGUI extends JFrame {
 
         addBtnUseAbsolute = true;
         addBtnAbsoluteX = 610;
-        addBtnAbsoluteY = 500;
+        addBtnAbsoluteY = 560;
         addToBusButton.setBounds(addBtnAbsoluteX, addBtnAbsoluteY, 360, 54);
 
         JPanel redLine = new JPanel();
@@ -392,17 +406,6 @@ public class TransitQGUI extends JFrame {
             JPanel busPanel = createBusPanel(busName);
             busPanels.put(busName, busPanel);
             rightJPanel.add(busPanel);
-            rightJPanel.revalidate();
-            rightJPanel.repaint();
-        }
-    }
-
-    // --- Remove bus panel ---
-    private void removeBusPanel(String busName, JPanel rightJPanel) {
-        if (busPanels.containsKey(busName)) {
-            JPanel busPanel = busPanels.get(busName);
-            rightJPanel.remove(busPanel);
-            busPanels.remove(busName);
             rightJPanel.revalidate();
             rightJPanel.repaint();
         }
@@ -468,17 +471,11 @@ public class TransitQGUI extends JFrame {
         label.setForeground(Color.BLACK); // Ensure text is visible
         panel.add(label, BorderLayout.CENTER);
 
-        // Debug: Print when bus panel is created
-        System.out.println("Created bus panel for: " + name);
-
         return panel;
     }
 
     // --- Updated Visuals Method ---
     public void updateVisuals() {
-        // Update pulsing bus (first bus in queue is active)
-        pulsingBusName = manager.getCurrentlyAssignedBusName();
-
         // Update depart button state
         if (departBusButton != null) {
             departBusButton.setEnabled(manager.canDepartBus());
@@ -497,8 +494,6 @@ public class TransitQGUI extends JFrame {
 
                 // Repaint to update colors
                 busPanel.repaint();
-            } else {
-                System.out.println("WARNING: Bus " + busName + " not found in manager!");
             }
         }
 
@@ -513,9 +508,12 @@ public class TransitQGUI extends JFrame {
         assignTitleLabel.setText(
                 "ASSIGN PASSENGER AREA (" + assignQueue.size() + "/" + manager.getAssignAreaDisplayCapacity() + ")");
 
+        int assignIndex = 0;
         for (Passenger p : assignQueue) {
-            assignAreaVisPanel
-                    .add(createPassengerIcon(p.getName(), ASSIGN_AREA_ID_TEXT, p.getPassengerId(), p.getMoneyPaid()));
+            boolean isFirst = (assignIndex == 0);
+            assignAreaVisPanel.add(createPassengerIcon(p.getName(), ASSIGN_AREA_ID_TEXT,
+                    p.getPassengerId(), p.getMoneyPaid(), p.getDestination(), isFirst, "ASSIGN"));
+            assignIndex++;
         }
 
         // Update TICKET AREA
@@ -525,9 +523,12 @@ public class TransitQGUI extends JFrame {
         JLabel ticketTitleLabel = (JLabel) ticketContainer.getComponent(0);
         ticketTitleLabel.setText("TICKET AREA (" + ticketQueue.size() + "/" + manager.getTicketAreaCapacity() + ")");
 
+        int ticketIndex = 0;
         for (Passenger p : ticketQueue) {
+            boolean isFirst = (ticketIndex == 0);
             ticketAreaVisPanel.add(createPassengerIcon(p.getName(), TICKET_AREA_TEXT_ORANGE.darker(),
-                    p.getPassengerId(), p.getMoneyPaid()));
+                    p.getPassengerId(), p.getMoneyPaid(), p.getDestination(), isFirst, "TICKET"));
+            ticketIndex++;
         }
 
         revalidate();
@@ -556,14 +557,6 @@ public class TransitQGUI extends JFrame {
         if (result == JOptionPane.OK_OPTION) {
             String departureMessage = manager.departBus();
             logOperation(departureMessage);
-            debugBusState();
-
-            // Get the updated bus order after departure
-            java.util.List<String> newBusOrder = manager.getBusOrder();
-
-            // Debug: Print current bus state
-            System.out.println("After departure - Bus order: " + newBusOrder);
-            System.out.println("Current assigned bus: " + manager.getCurrentlyAssignedBusName());
 
             // Check if a new bus was generated
             String newBusName = manager.getNewlyGeneratedBus();
@@ -600,27 +593,21 @@ public class TransitQGUI extends JFrame {
         return null;
     }
 
-    // [Rest of the methods remain the same: createLogPanel, createStyledButton,
-    // createAssignAreaVisPanel, createTicketAreaContainer, createPassengerIcon,
-    // generateColorFromId, showAddPassengerForm, passPassengerAction,
-    // addPassengerToBusAction, showBusAssignmentForm, searchPassengerAction,
-    // removePassengerAction, updatePassengerAction, reportAction, clearLogsAction]
-
     // Log Panel
     private JScrollPane createLogPanel() {
         logArea = new JTextArea("[10:30:43] SYSTEM START: TransitQ Initialized.", 5, 80);
         logArea.setEditable(false);
-        logArea.setBackground(LOG_BG_DARK_GRAY);
-        logArea.setForeground(Color.LIGHT_GRAY);
+        logArea.setBackground(Color.WHITE);
+        logArea.setForeground(Color.black);
         logArea.setFont(new Font("Monospaced", Font.PLAIN, 14));
 
         JPanel logTitlePanel = new JPanel(new BorderLayout());
-        logTitlePanel.setBackground(Color.BLACK);
+        logTitlePanel.setBackground(DARK_BLUE_FRAME);
         logTitlePanel.setBorder(BorderFactory.createLineBorder(Color.WHITE, 1));
 
         JLabel titleLabel = new JLabel("OPERATION LOGS", SwingConstants.CENTER);
         titleLabel.setForeground(Color.WHITE);
-        titleLabel.setFont(new Font("Arial", Font.BOLD, 14));
+        titleLabel.setFont(new Font("Arial", Font.BOLD, 16));
         logTitlePanel.add(titleLabel, BorderLayout.CENTER);
 
         JLabel pageLabel = new JLabel("1", SwingConstants.RIGHT);
@@ -703,6 +690,7 @@ public class TransitQGUI extends JFrame {
         JPanel panel = new JPanel(new BorderLayout()) {
             @Override
             protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
                 Graphics2D g2 = (Graphics2D) g;
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
                 int w = getWidth();
@@ -736,8 +724,10 @@ public class TransitQGUI extends JFrame {
         return container;
     }
 
-    // Passenger Icon Creator
-    private JPanel createPassengerIcon(String nameText, Color textColor, int passengerId, String moneyPaid) {
+    // Passenger Icon Creator with FIRST IN QUEUE indicator
+    private JPanel createPassengerIcon(String nameText, Color textColor, int passengerId,
+            String moneyPaid, String destination,
+            boolean isFirstInQueue, String areaType) {
         Color silhouetteColor = generateColorFromId(passengerId);
         int size = (CURRENT_CONTENT_WIDTH > 0) ? (int) (CURRENT_CONTENT_WIDTH * 0.035) : 50;
         int iconWidth = size;
@@ -746,20 +736,49 @@ public class TransitQGUI extends JFrame {
         int bodyWidth = (int) (iconWidth * 0.8);
         int bodyHeight = (int) (iconHeight * 0.7) - headSize;
 
-        JPanel iconPanel = new JPanel();
+        JPanel iconPanel = new JPanel() {
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+
+                // Draw FIRST IN QUEUE indicator
+                if (isFirstInQueue && blinkState) {
+                    Graphics2D g2 = (Graphics2D) g;
+                    g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+                    // Draw glowing effect
+                    g2.setColor(new Color(0, 255, 0, 100));
+                    g2.fillRoundRect(0, 0, getWidth(), getHeight(), 10, 10);
+
+                    // Draw "FIRST" text indicator
+                    g2.setColor(Color.GREEN);
+                    g2.setFont(new Font("Arial", Font.BOLD, 10));
+                    String firstText = "";
+                    FontMetrics fm = g2.getFontMetrics();
+                    int textWidth = fm.stringWidth(firstText);
+                    g2.drawString(firstText, (getWidth() - textWidth) / 2, 12);
+
+                    // Draw border for first in queue
+                    g2.setColor(Color.GREEN);
+                    g2.setStroke(new BasicStroke(3));
+                    g2.drawRoundRect(2, 2, getWidth() - 5, getHeight() - 5, 10, 10);
+                }
+            }
+        };
         iconPanel.setLayout(new BorderLayout());
         iconPanel.setOpaque(false);
         iconPanel.setPreferredSize(new Dimension(iconWidth, iconHeight));
 
         JLabel idNameLabel = new JLabel(
-                "<html><center><font size='-2'>ID: " + passengerId + "</font><br>" +
+                "<html><center><font size='-2'>" + destination + "</font><br>" +
                         nameText + "<br>" +
                         "<font size='-2'>₱" + moneyPaid + "</font></center></html>",
                 SwingConstants.CENTER);
         idNameLabel.setForeground(textColor);
         idNameLabel.setFont(new Font("Arial", Font.BOLD, (int) (size * 0.18)));
         idNameLabel.setOpaque(false);
-        idNameLabel.setToolTipText("ID: " + passengerId + " | Name: " + nameText + " | Money Paid: ₱" + moneyPaid);
+        idNameLabel.setToolTipText(
+                "Destination: " + destination + " | Name: " + nameText + " | Money Paid: ₱" + moneyPaid);
         idNameLabel.setBorder(BorderFactory.createEmptyBorder(2, 0, 0, 0));
         iconPanel.add(idNameLabel, BorderLayout.NORTH);
 
@@ -1043,28 +1062,16 @@ public class TransitQGUI extends JFrame {
         }
     }
 
-    // --- Debug method to check bus state ---
-    private void debugBusState() {
-        System.out.println("=== DEBUG BUS STATE ===");
-        System.out.println("Current assigned bus: " + manager.getCurrentlyAssignedBusName());
-        System.out.println("Bus order: " + manager.getBusOrder());
-        System.out.println("Bus panels in GUI: " + busPanels.keySet());
-
-        Map<String, Bus> buses = manager.getBuses();
-        for (String busName : manager.getBusOrder()) {
-            Bus bus = buses.get(busName);
-            if (bus != null) {
-                System.out.println(busName + ": " + bus.getCurrentLoad() + "/" + bus.getCapacity() +
-                        " (Full: " + bus.isFull() + ")");
-            } else {
-                System.out.println(busName + ": NOT FOUND IN MANAGER!");
-            }
+    @Override
+    public void dispose() {
+        if (blinkTimer != null) {
+            blinkTimer.stop();
         }
-        System.out.println("======================");
+        super.dispose();
     }
 
     // Main method
     public static void main(String[] args) {
-        new TransitQGUI();
+        SwingUtilities.invokeLater(() -> new TransitQGUI());
     }
 }
