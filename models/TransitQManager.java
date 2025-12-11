@@ -7,6 +7,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.LinkedHashMap;
+import java.util.stream.Collectors;
+import java.time.LocalDateTime;
 
 public class TransitQManager {
     private Queue<Passenger> ticketAreaQueue;
@@ -17,12 +19,21 @@ public class TransitQManager {
     private final int ASSIGN_AREA_DISPLAY_CAPACITY = 15;
     private Map<String, Bus> buses;
     private String currentlyAssignedBusName;
-    private List<String> busOrder; // Maintain bus order for rotation
-    private List<String> availableBusNames; // New bus names for rotation
-    private String newlyGeneratedBus; // Track newly generated bus for GUI updates
+    private List<String> busOrder;
+    private List<String> availableBusNames;
+    private String newlyGeneratedBus;
 
     // Predefined passengers
     private List<Passenger> predefinedPassengers;
+
+    // Enhanced fields for payment verification and reporting
+    private Map<Integer, String> paymentVerificationLog;
+    private double totalCashCollected;
+    private int vipTicketsSold;
+    private int standardTicketsSold;
+    private int discountedTicketsSold;
+    private List<String> departureLog;
+    private LocalDateTime systemStartTime;
 
     public TransitQManager() {
         this.ticketAreaQueue = new LinkedList<>();
@@ -38,7 +49,7 @@ public class TransitQManager {
 
         // Initialize bus order
         this.busOrder = new ArrayList<>(buses.keySet());
-        this.currentlyAssignedBusName = busOrder.get(0); // First bus is assigned
+        this.currentlyAssignedBusName = busOrder.get(0);
 
         // Initialize available bus names for rotation
         this.availableBusNames = new ArrayList<>();
@@ -53,6 +64,15 @@ public class TransitQManager {
 
         // Initialize predefined passengers
         this.predefinedPassengers = createPredefinedPassengers();
+
+        // Initialize enhanced fields
+        this.paymentVerificationLog = new HashMap<>();
+        this.totalCashCollected = 0.0;
+        this.vipTicketsSold = 0;
+        this.standardTicketsSold = 0;
+        this.discountedTicketsSold = 0;
+        this.departureLog = new ArrayList<>();
+        this.systemStartTime = LocalDateTime.now();
 
         // Add some predefined passengers to ticket area initially
         initializeWithPredefinedPassengers();
@@ -78,9 +98,7 @@ public class TransitQManager {
         return passengers;
     }
 
-    // --- Initialize with some predefined passengers ---
     private void initializeWithPredefinedPassengers() {
-        // Add first 5 passengers to ticket area
         for (int i = 0; i < 12 && i < predefinedPassengers.size(); i++) {
             Passenger passenger = predefinedPassengers.get(i);
             if (ticketAreaQueue.size() < TICKET_AREA_CAPACITY) {
@@ -89,108 +107,128 @@ public class TransitQManager {
         }
     }
 
-    // --- Method to add predefined passengers to ticket area ---
-    public String addPredefinedPassengers(int count) {
-        if (predefinedPassengers.isEmpty()) {
-            return "ALERT: No more predefined passengers available.";
+    // --- Enhanced Bus Assignment Methods ---
+    public String assignBusToQueue(String busName) {
+        if (!buses.containsKey(busName)) {
+            return "ERROR: Bus " + busName + " does not exist.";
         }
 
-        int added = 0;
-        int failed = 0;
+        Bus bus = buses.get(busName);
 
-        for (Passenger passenger : predefinedPassengers) {
-            if (added >= count)
-                break;
-
-            // Check if passenger is already in any queue
-            boolean alreadyInSystem = isPassengerInSystem(passenger);
-
-            if (!alreadyInSystem && ticketAreaQueue.size() < TICKET_AREA_CAPACITY) {
-                // Create a copy to avoid reference issues
-                Passenger newPassenger = new Passenger(
-                        passenger.getName(),
-                        passenger.getDestination(),
-                        passenger.getTicketType(),
-                        "Cash",
-                        passenger.getMoneyPaid());
-                ticketAreaQueue.offer(newPassenger);
-                added++;
-            } else if (alreadyInSystem) {
-                failed++;
-            }
+        if (bus.getCurrentLoad() > 0 && !busName.equals(currentlyAssignedBusName)) {
+            return "ALERT: " + busName + " has " + bus.getCurrentLoad() +
+                    " passengers. Cannot reassign while occupied.";
         }
 
-        String message = "ADDED: " + added + " predefined passenger(s) to Ticket Area.";
-        if (failed > 0) {
-            message += " " + failed + " passenger(s) were already in the system.";
-        }
-        if (ticketAreaQueue.size() >= TICKET_AREA_CAPACITY) {
-            message += " Ticket Area is now full.";
+        if (bus.isFull() && !busName.equals(currentlyAssignedBusName)) {
+            return "ALERT: " + busName + " is full. Please depart it first before reassigning.";
         }
 
-        return message;
+        this.currentlyAssignedBusName = busName;
+
+        if (busOrder.contains(busName)) {
+            busOrder.remove(busName);
+            busOrder.add(0, busName);
+        }
+
+        return "ASSIGNED: " + busName + " is now assigned to the queue. Load: " +
+                bus.getCurrentLoad() + "/" + bus.getCapacity();
     }
 
-    // --- Check if passenger is already in the system ---
-    private boolean isPassengerInSystem(Passenger passenger) {
-        // Check ticket area
-        for (Passenger p : ticketAreaQueue) {
-            if (p.getName().equals(passenger.getName()) &&
-                    p.getDestination().equals(passenger.getDestination())) {
-                return true;
-            }
-        }
+    public List<String> getAvailableBuses() {
+        List<String> available = new ArrayList<>();
+        for (Map.Entry<String, Bus> entry : buses.entrySet()) {
+            String busName = entry.getKey();
+            Bus bus = entry.getValue();
 
-        // Check assign area
-        for (Passenger p : assignAreaQueue) {
-            if (p.getName().equals(passenger.getName()) &&
-                    p.getDestination().equals(passenger.getDestination())) {
-                return true;
-            }
-        }
-
-        // Check served log
-        for (Passenger p : servedLog) {
-            if (p.getName().equals(passenger.getName()) &&
-                    p.getDestination().equals(passenger.getDestination())) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    // --- Get remaining predefined passengers count ---
-    public int getRemainingPredefinedPassengers() {
-        int available = 0;
-        for (Passenger passenger : predefinedPassengers) {
-            if (!isPassengerInSystem(passenger)) {
-                available++;
+            if (!bus.isFull() && bus.getCurrentLoad() == 0 &&
+                    !busName.equals(currentlyAssignedBusName)) {
+                available.add(busName);
             }
         }
         return available;
     }
 
-    // --- Get all predefined passengers info ---
-    public String getPredefinedPassengersInfo() {
-        StringBuilder info = new StringBuilder();
-        info.append("=== Predefined Passengers (Total: ").append(predefinedPassengers.size()).append(") ===\n");
+    public String getBusStatusReport() {
+        StringBuilder report = new StringBuilder();
+        report.append("=== BUS STATUS REPORT ===\n");
+        report.append("Current Assigned Bus: ").append(currentlyAssignedBusName).append("\n");
+        report.append("Bus Rotation Order: ").append(busOrder).append("\n");
+        report.append("-------------------------\n");
 
-        for (int i = 0; i < predefinedPassengers.size(); i++) {
-            Passenger p = predefinedPassengers.get(i);
-            boolean inSystem = isPassengerInSystem(p);
-            String status = inSystem ? "[IN SYSTEM]" : "[AVAILABLE]";
+        for (String busName : busOrder) {
+            Bus bus = buses.get(busName);
+            if (bus != null) {
+                String status = busName.equals(currentlyAssignedBusName) ? "[ACTIVE]" : "[WAITING]";
+                if (bus.isFull())
+                    status = "[FULL]";
 
-            info.append(i + 1).append(". ").append(status).append(" ")
-                    .append(p.getName()).append(" -> ").append(p.getDestination())
-                    .append(" (").append(p.getTicketType()).append(") - ₱").append(p.getMoneyPaid())
-                    .append("\n");
+                report.append(String.format("%-10s %-10s Load: %2d/%2d | Available: %2d seats\n",
+                        busName, status, bus.getCurrentLoad(), bus.getCapacity(),
+                        bus.getCapacity() - bus.getCurrentLoad()));
+            }
         }
 
-        return info.toString();
+        report.append("Available New Buses: ").append(availableBusNames).append("\n");
+        return report.toString();
     }
 
-    // --- Core Operations ---
+    // --- Enhanced Payment Verification Methods ---
+    private boolean verifyPayment(Passenger passenger) {
+        try {
+            double amountPaid = Double.parseDouble(passenger.getMoneyPaid());
+            String ticketType = passenger.getTicketType();
+
+            double requiredAmount = 0.0;
+            switch (ticketType.toLowerCase()) {
+                case "vip":
+                    requiredAmount = 100.00;
+                    break;
+                case "discounted":
+                    requiredAmount = 35.00;
+                    break;
+                case "standard":
+                default:
+                    requiredAmount = 50.00;
+                    break;
+            }
+
+            boolean verified = amountPaid >= requiredAmount;
+            String status = verified ? "VERIFIED" : "INSUFFICIENT";
+            paymentVerificationLog.put(passenger.getPassengerId(),
+                    status + " (Paid: ₱" + amountPaid + ", Required: ₱" + requiredAmount + ")");
+
+            return verified;
+
+        } catch (NumberFormatException e) {
+            paymentVerificationLog.put(passenger.getPassengerId(), "INVALID_AMOUNT_FORMAT");
+            return false;
+        }
+    }
+
+    private void recordPayment(Passenger passenger) {
+        try {
+            double amount = Double.parseDouble(passenger.getMoneyPaid());
+            totalCashCollected += amount;
+
+            switch (passenger.getTicketType().toLowerCase()) {
+                case "vip":
+                    vipTicketsSold++;
+                    break;
+                case "discounted":
+                    discountedTicketsSold++;
+                    break;
+                case "standard":
+                default:
+                    standardTicketsSold++;
+                    break;
+            }
+        } catch (NumberFormatException e) {
+            System.err.println("Error recording payment for passenger: " + passenger.getPassengerId());
+        }
+    }
+
+    // --- Enhanced Core Operations with Payment Verification ---
     public String addPassengerToTicketArea(Passenger p) {
         if (ticketAreaQueue.size() >= TICKET_AREA_CAPACITY) {
             return "ALERT: TICKET AREA FULL! Cannot add new passenger.";
@@ -210,10 +248,21 @@ public class TransitQManager {
 
         Passenger p = ticketAreaQueue.poll();
         if (p != null) {
-            p.setPaid(true); // Simulate payment verification
+            boolean paymentVerified = verifyPayment(p);
+            p.setPaid(paymentVerified);
+
+            if (!paymentVerified) {
+                ticketAreaQueue.offer(p);
+                return "PAYMENT ERROR: Passenger ID " + p.getPassengerId() +
+                        " payment verification failed. Moved to end of ticket queue.";
+            }
+
+            recordPayment(p);
+
             assignAreaQueue.offer(p);
-            return "PASS: Passenger ID " + p.getPassengerId() + " moved to ASSIGN AREA. Assigned Bus: "
-                    + currentlyAssignedBusName;
+            return "PASS: Passenger ID " + p.getPassengerId() +
+                    " moved to ASSIGN AREA. Payment Verified: ₱" + p.getMoneyPaid() +
+                    ". Assigned Bus: " + currentlyAssignedBusName;
         }
         return "ERROR: Failed to pass passenger (unexpected error).";
     }
@@ -261,57 +310,136 @@ public class TransitQManager {
             return "ALERT: " + currentBus.getName() + " is empty. No need to depart.";
         }
 
-        // Record departure
         String departureMessage = "DEPARTED: " + currentBus.getName() + " has departed with " +
                 currentBus.getCurrentLoad() + " passengers.";
 
-        // Reset the departed bus
+        departureLog.add(LocalDateTime.now() + " - " + currentBus.getName() +
+                " departed with " + currentBus.getCurrentLoad() + " passengers");
+
         currentBus.resetBus();
 
-        // Remove the departed bus from the front of the queue
         String departedBusName = busOrder.remove(0);
 
-        // Add new bus if available, otherwise add the departed bus back to the end
         String newBusName;
         if (!availableBusNames.isEmpty()) {
             newBusName = availableBusNames.remove(0);
             buses.put(newBusName, new Bus(newBusName, 10));
             busOrder.add(newBusName);
-            newlyGeneratedBus = newBusName; // Set the newly generated bus for GUI
+            newlyGeneratedBus = newBusName;
         } else {
-            // If no new buses available, put the departed bus at the end
             busOrder.add(departedBusName);
-            newlyGeneratedBus = null; // No new bus generated
+            newlyGeneratedBus = null;
         }
 
-        // Assign the new first bus
         currentlyAssignedBusName = busOrder.get(0);
 
         return departureMessage + " New active bus: " + currentlyAssignedBusName;
     }
 
-    // --- New method to get newly generated bus for GUI updates ---
-    public String getNewlyGeneratedBus() {
-        String newBus = newlyGeneratedBus;
-        newlyGeneratedBus = null; // Reset after retrieval
-        return newBus;
+    // --- Enhanced Reporting Methods ---
+    public String getPaymentReport() {
+        StringBuilder report = new StringBuilder();
+        report.append("=== PAYMENT REPORT ===\n");
+        report.append(String.format("Total Cash Collected: ₱%.2f\n", totalCashCollected));
+        report.append("Tickets Sold:\n");
+        report.append(String.format("  VIP: %d tickets\n", vipTicketsSold));
+        report.append(String.format("  Standard: %d tickets\n", standardTicketsSold));
+        report.append(String.format("  Discounted: %d tickets\n", discountedTicketsSold));
+        report.append(
+                String.format("Total Tickets: %d\n", (vipTicketsSold + standardTicketsSold + discountedTicketsSold)));
+        report.append("----------------------\n");
+
+        report.append("Recent Payment Verifications (Last 10):\n");
+        List<Integer> recentIds = paymentVerificationLog.keySet().stream()
+                .sorted((a, b) -> b - a)
+                .limit(10)
+                .collect(Collectors.toList());
+
+        for (Integer id : recentIds) {
+            report.append(String.format("  Passenger ID %d: %s\n", id, paymentVerificationLog.get(id)));
+        }
+
+        return report.toString();
     }
 
-    public boolean canDepartBus() {
-        Bus currentBus = buses.get(currentlyAssignedBusName);
-        return currentBus != null && currentBus.isFull();
+    public String getFinancialReport() {
+        double vipRevenue = vipTicketsSold * 100.00;
+        double standardRevenue = standardTicketsSold * 50.00;
+        double discountedRevenue = discountedTicketsSold * 35.00;
+        double calculatedTotal = vipRevenue + standardRevenue + discountedRevenue;
+
+        StringBuilder report = new StringBuilder();
+        report.append("=== FINANCIAL REPORT ===\n");
+        report.append(String.format("Revenue by Ticket Type:\n"));
+        report.append(String.format("  VIP (₱100.00 x %d): ₱%.2f\n", vipTicketsSold, vipRevenue));
+        report.append(String.format("  Standard (₱50.00 x %d): ₱%.2f\n", standardTicketsSold, standardRevenue));
+        report.append(String.format("  Discounted (₱35.00 x %d): ₱%.2f\n", discountedTicketsSold, discountedRevenue));
+        report.append(String.format("Total Calculated Revenue: ₱%.2f\n", calculatedTotal));
+        report.append(String.format("Total Cash Collected: ₱%.2f\n", totalCashCollected));
+        report.append(String.format("Discrepancy: ₱%.2f\n", (totalCashCollected - calculatedTotal)));
+        report.append("========================\n");
+
+        return report.toString();
     }
 
-    public boolean isCurrentBusFull() {
-        Bus currentBus = buses.get(currentlyAssignedBusName);
-        return currentBus != null && currentBus.getCurrentLoad() >= currentBus.getCapacity();
+    public String getComprehensiveReport() {
+        StringBuilder report = new StringBuilder();
+
+        report.append("=== TRANSITQ COMPREHENSIVE REPORT ===\n");
+        report.append("Generated: ").append(LocalDateTime.now()).append("\n");
+        report.append("System Uptime: ").append(getUptimeString()).append("\n");
+        report.append("=====================================\n\n");
+
+        report.append("1. PASSENGER STATISTICS\n");
+        report.append("   Total Passengers Served: ").append(servedLog.size()).append("\n");
+        report.append("   Current in Ticket Area: ").append(ticketAreaQueue.size()).append("\n");
+        report.append("   Current in Assign Area: ").append(assignAreaQueue.size()).append("\n");
+        report.append("   Total Processed Today: ").append(servedLog.size() +
+                ticketAreaQueue.size() + assignAreaQueue.size()).append("\n\n");
+
+        report.append("2. BUS OPERATIONS\n");
+        report.append(getBusStatusReport()).append("\n");
+
+        report.append("3. FINANCIAL SUMMARY\n");
+        report.append(getPaymentReport()).append("\n");
+
+        report.append("4. RECENT ACTIVITY\n");
+        report.append("   Last 5 Departures:\n");
+        int start = Math.max(0, departureLog.size() - 5);
+        for (int i = start; i < departureLog.size(); i++) {
+            report.append("     ").append(departureLog.get(i)).append("\n");
+        }
+
+        report.append("   Last 10 Boardings:\n");
+        List<Passenger> recentServed = servedLog.subList(
+                Math.max(0, servedLog.size() - 10), servedLog.size());
+        for (Passenger p : recentServed) {
+            report.append(String.format("     ID %d: %s to %s (₱%s)\n",
+                    p.getPassengerId(), p.getName(), p.getDestination(), p.getMoneyPaid()));
+        }
+
+        return report.toString();
     }
 
-    public List<String> getBusOrder() {
-        return new ArrayList<>(busOrder);
+    private String getUptimeString() {
+        java.time.Duration duration = java.time.Duration.between(systemStartTime, LocalDateTime.now());
+        long hours = duration.toHours();
+        long minutes = duration.toMinutes() % 60;
+        long seconds = duration.getSeconds() % 60;
+        return String.format("%02d:%02d:%02d", hours, minutes, seconds);
     }
 
-    // --- Utility Methods ---
+    public boolean exportReportToFile(String filename) {
+        try (java.io.PrintWriter writer = new java.io.PrintWriter(filename)) {
+            writer.println(getComprehensiveReport());
+            return true;
+        } catch (java.io.IOException e) {
+            System.err.println("Error exporting report: " + e.getMessage());
+            return false;
+        }
+    }
+
+    // --- Existing Utility Methods ---
     public Passenger searchPassenger(String searchInput) {
         try {
             int id = Integer.parseInt(searchInput);
@@ -361,7 +489,6 @@ public class TransitQManager {
     }
 
     public String removePassenger(int id) {
-        // Remove from ticket area
         for (Passenger p : ticketAreaQueue) {
             if (p.getPassengerId() == id) {
                 ticketAreaQueue.remove(p);
@@ -369,7 +496,6 @@ public class TransitQManager {
             }
         }
 
-        // Remove from assign area
         for (Passenger p : assignAreaQueue) {
             if (p.getPassengerId() == id) {
                 assignAreaQueue.remove(p);
@@ -409,10 +535,29 @@ public class TransitQManager {
         return new LinkedHashMap<>(buses);
     }
 
+    public List<String> getBusOrder() {
+        return new ArrayList<>(busOrder);
+    }
+
+    public String getNewlyGeneratedBus() {
+        String newBus = newlyGeneratedBus;
+        newlyGeneratedBus = null;
+        return newBus;
+    }
+
+    public boolean canDepartBus() {
+        Bus currentBus = buses.get(currentlyAssignedBusName);
+        return currentBus != null && currentBus.isFull();
+    }
+
+    public boolean isCurrentBusFull() {
+        Bus currentBus = buses.get(currentlyAssignedBusName);
+        return currentBus != null && currentBus.getCurrentLoad() >= currentBus.getCapacity();
+    }
+
     public void assignBus(String busName) {
         if (buses.containsKey(busName)) {
             this.currentlyAssignedBusName = busName;
-            // Ensure this bus is at the front of the queue
             if (busOrder.contains(busName)) {
                 busOrder.remove(busName);
                 busOrder.add(0, busName);
@@ -420,7 +565,108 @@ public class TransitQManager {
         }
     }
 
-    // --- Debug method to check bus status ---
+    // --- Predefined Passenger Methods ---
+    public String addPredefinedPassengers(int count) {
+        if (predefinedPassengers.isEmpty()) {
+            return "ALERT: No more predefined passengers available.";
+        }
+
+        int added = 0;
+        int failed = 0;
+
+        for (Passenger passenger : predefinedPassengers) {
+            if (added >= count)
+                break;
+
+            boolean alreadyInSystem = isPassengerInSystem(passenger);
+
+            if (!alreadyInSystem && ticketAreaQueue.size() < TICKET_AREA_CAPACITY) {
+                Passenger newPassenger = new Passenger(
+                        passenger.getName(),
+                        passenger.getDestination(),
+                        passenger.getTicketType(),
+                        "Cash",
+                        passenger.getMoneyPaid());
+                ticketAreaQueue.offer(newPassenger);
+                added++;
+            } else if (alreadyInSystem) {
+                failed++;
+            }
+        }
+
+        String message = "ADDED: " + added + " predefined passenger(s) to Ticket Area.";
+        if (failed > 0) {
+            message += " " + failed + " passenger(s) were already in the system.";
+        }
+        if (ticketAreaQueue.size() >= TICKET_AREA_CAPACITY) {
+            message += " Ticket Area is now full.";
+        }
+
+        return message;
+    }
+
+    private boolean isPassengerInSystem(Passenger passenger) {
+        for (Passenger p : ticketAreaQueue) {
+            if (p.getName().equals(passenger.getName()) &&
+                    p.getDestination().equals(passenger.getDestination())) {
+                return true;
+            }
+        }
+
+        for (Passenger p : assignAreaQueue) {
+            if (p.getName().equals(passenger.getName()) &&
+                    p.getDestination().equals(passenger.getDestination())) {
+                return true;
+            }
+        }
+
+        for (Passenger p : servedLog) {
+            if (p.getName().equals(passenger.getName()) &&
+                    p.getDestination().equals(passenger.getDestination())) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public int getRemainingPredefinedPassengers() {
+        int available = 0;
+        for (Passenger passenger : predefinedPassengers) {
+            if (!isPassengerInSystem(passenger)) {
+                available++;
+            }
+        }
+        return available;
+    }
+
+    public String getPredefinedPassengersInfo() {
+        StringBuilder info = new StringBuilder();
+        info.append("=== Predefined Passengers (Total: ").append(predefinedPassengers.size()).append(") ===\n");
+
+        for (int i = 0; i < predefinedPassengers.size(); i++) {
+            Passenger p = predefinedPassengers.get(i);
+            boolean inSystem = isPassengerInSystem(p);
+            String status = inSystem ? "[IN SYSTEM]" : "[AVAILABLE]";
+
+            info.append(i + 1).append(". ").append(status).append(" ")
+                    .append(p.getName()).append(" -> ").append(p.getDestination())
+                    .append(" (").append(p.getTicketType()).append(") - ₱").append(p.getMoneyPaid())
+                    .append("\n");
+        }
+
+        return info.toString();
+    }
+
+    public List<Passenger> getPredefinedPassengers() {
+        return new ArrayList<>(predefinedPassengers);
+    }
+
+    public boolean hasAvailablePredefinedPassengers() {
+        return getRemainingPredefinedPassengers() > 0;
+    }
+
+    // Debug method
     public void printBusStatus() {
         System.out.println("=== Bus Status ===");
         System.out.println("Current assigned bus: " + currentlyAssignedBusName);
@@ -435,14 +681,5 @@ public class TransitQManager {
             }
         }
         System.out.println("==================");
-    }
-
-    // --- New methods for predefined passengers ---
-    public List<Passenger> getPredefinedPassengers() {
-        return new ArrayList<>(predefinedPassengers);
-    }
-
-    public boolean hasAvailablePredefinedPassengers() {
-        return getRemainingPredefinedPassengers() > 0;
     }
 }

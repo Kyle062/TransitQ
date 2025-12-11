@@ -1,5 +1,5 @@
-// In Bus.java - Add the isFull() method
 package models;
+
 public class Bus {
     private String name;
     private int capacity;
@@ -19,17 +19,14 @@ public class Bus {
         return false;
     }
 
-    // Add reset method
     public void resetBus() {
         this.currentLoad = 0;
     }
 
-    // Add isFull method
     public boolean isFull() {
         return currentLoad >= capacity;
     }
 
-    // Getters
     public String getName() {
         return name;
     }
@@ -40,5 +37,12 @@ public class Bus {
 
     public int getCurrentLoad() {
         return currentLoad;
+    }
+
+    // Add toString for better debugging
+    @Override
+    public String toString() {
+        return String.format("Bus{name='%s', load=%d/%d, full=%s}", 
+            name, currentLoad, capacity, isFull());
     }
 }

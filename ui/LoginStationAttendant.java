@@ -133,7 +133,7 @@ public class LoginStationAttendant extends JFrame {
         JLabel clickPassenger = new JLabel("Are you a Passenger?");
         clickPassenger.setBounds(158, 480, 200, 30);
         clickPassenger.setFont(new Font("SansSerif", Font.PLAIN, 14));
-        // clickPassenger.setForeground(new Color(82, 181, 247));
+        clickPassenger.setForeground(new Color(82, 181, 247)); 
         addUnderline(clickPassenger);
         rightPanel.add(clickPassenger);
         clickPassenger.addMouseListener(new MouseAdapter() {

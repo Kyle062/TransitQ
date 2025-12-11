@@ -17,10 +17,10 @@ public class Passenger {
         this.ticketType = ticketType;
         this.paymentMethod = paymentMethod;
         this.moneyPaid = moneyPaid;
-        this.isPaid = false;
+        this.isPaid = false; // Initialize as unpaid
     }
 
-    // Getters and Setters
+    // Getters
     public int getPassengerId() {
         return passengerId;
     }
@@ -37,10 +37,19 @@ public class Passenger {
         return ticketType;
     }
 
+    public String getPaymentMethod() {
+        return paymentMethod;
+    }
+
+    public String getMoneyPaid() {
+        return moneyPaid;
+    }
+
     public boolean isPaid() {
         return isPaid;
     }
 
+    // Setters
     public void setName(String name) {
         this.name = name;
     }
@@ -53,17 +62,26 @@ public class Passenger {
         this.ticketType = ticketType;
     }
 
+    public void setPaymentMethod(String paymentMethod) {
+        this.paymentMethod = paymentMethod;
+    }
+
+    public void setMoneyPaid(String moneyPaid) {
+        this.moneyPaid = moneyPaid;
+    }
+
     public void setPaid(boolean paid) {
         this.isPaid = paid;
     }
 
-    public String getMoneyPaid() {
-        return moneyPaid;
-    }
-
     @Override
     public String toString() {
-        // Return ID for icon display
         return String.valueOf(passengerId);
+    }
+
+    // Detailed toString for reports
+    public String toDetailedString() {
+        return String.format("Passenger{id=%d, name='%s', dest='%s', ticket='%s', paid='%s', amount='%s', verified=%s}",
+                passengerId, name, destination, ticketType, paymentMethod, moneyPaid, isPaid);
     }
 }
