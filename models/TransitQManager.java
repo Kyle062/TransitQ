@@ -15,8 +15,8 @@ public class TransitQManager {
     private Queue<Passenger> assignAreaQueue;
     private List<Passenger> servedLog;
 
-    private final int TICKET_AREA_CAPACITY = 15;
-    private final int ASSIGN_AREA_DISPLAY_CAPACITY = 15;
+    private final int TICKET_AREA_CAPACITY = 50;
+    private final int ASSIGN_AREA_DISPLAY_CAPACITY = 50;
     private Map<String, Bus> buses;
     private String currentlyAssignedBusName;
     private List<String> busOrder;

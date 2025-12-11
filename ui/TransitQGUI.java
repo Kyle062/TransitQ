@@ -47,9 +47,7 @@ public class TransitQGUI extends JFrame {
     private final Color TICKET_AREA_BG = Color.WHITE;
     private final Color TICKET_AREA_TEXT_ORANGE = new Color(255, 192, 0);
     private final Color ASSIGN_AREA_ID_TEXT = Color.LIGHT_GRAY;
-    private final Color LOG_BG_DARK_GRAY = new Color(34, 34, 34);
     private final Color PULSE_COLOR = new Color(0, 255, 255);
-    private final Color FIRST_IN_QUEUE_COLOR = new Color(0, 255, 0, 150);
 
     private int CURRENT_CONTENT_WIDTH;
     private int CURRENT_CONTENT_HEIGHT;
@@ -1204,7 +1202,4 @@ public class TransitQGUI extends JFrame {
         super.dispose();
     }
 
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> new TransitQGUI());
-    }
 }
