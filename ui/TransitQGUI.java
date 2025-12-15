@@ -464,7 +464,7 @@ public class TransitQGUI extends JFrame {
         for (Passenger p : assignQueue) {
             boolean isFirst = (assignIndex == 0);
             assignAreaVisPanel.add(createPassengerIcon(p.getName(), ASSIGN_AREA_ID_TEXT,
-                    p.getPassengerId(), p.getMoneyPaid(), p.getDestination(), p.isPaid(), isFirst, "ASSIGN"));
+                    p.getPassengerId(), p.getMoneyPaid(), p.getDestination(), p.isPaid(), isFirst, "ASSIGN", p.getTicketType()));
             assignIndex++;
         }
 
@@ -475,10 +475,10 @@ public class TransitQGUI extends JFrame {
         ticketTitleLabel.setText("TICKET AREA (" + ticketQueue.size() + "/" + manager.getTicketAreaCapacity() + ")");
 
         int ticketIndex = 0;
-        for (Passenger p : ticketQueue) {
+        for (Passenger p : ticketQueue) {   
             boolean isFirst = (ticketIndex == 0);
             ticketAreaVisPanel.add(createPassengerIcon(p.getName(), TICKET_AREA_TEXT_ORANGE.darker(),
-                    p.getPassengerId(), p.getMoneyPaid(), p.getDestination(), p.isPaid(), isFirst, "TICKET"));
+                    p.getPassengerId(), p.getMoneyPaid(), p.getDestination(), p.isPaid(), isFirst, "TICKET", p.getTicketType()));
             ticketIndex++;
         }
 
@@ -667,7 +667,7 @@ public class TransitQGUI extends JFrame {
 
     private JPanel createPassengerIcon(String nameText, Color textColor, int passengerId,
             String moneyPaid, String destination, boolean isPaid,
-            boolean isFirstInQueue, String areaType) {
+            boolean isFirstInQueue, String areaType, String ticketType) { // Added ticketType parameter
         Color silhouetteColor = generateColorFromId(passengerId);
         int size = (CURRENT_CONTENT_WIDTH > 0) ? (int) (CURRENT_CONTENT_WIDTH * 0.035) : 50;
         int iconWidth = size;
@@ -706,16 +706,20 @@ public class TransitQGUI extends JFrame {
         iconPanel.setPreferredSize(new Dimension(iconWidth, iconHeight));
 
         String paymentStatus = isPaid ? "<font color='green'>✓</font>" : "<font color='red'>✗</font>";
+        // Added ticket type to the display
         JLabel idNameLabel = new JLabel(
                 "<html><center><font size='-2'>" + destination + "</font><br>" +
                         nameText + "<br>" +
-                        "<font size='-2'>₱" + moneyPaid + " " + paymentStatus + "</font></center></html>",
+                        "<font size='-2'>" + ticketType + " • ₱" + moneyPaid + " " + paymentStatus
+                        + "</font></center></html>",
                 SwingConstants.CENTER);
         idNameLabel.setForeground(textColor);
         idNameLabel.setFont(new Font("Arial", Font.BOLD, (int) (size * 0.18)));
         idNameLabel.setOpaque(false);
+        // Added ticket type to tooltip
         idNameLabel.setToolTipText(
-                "Destination: " + destination + " | Name: " + nameText + " | Money Paid: ₱" + moneyPaid + " | Paid: "
+                "Ticket Type: " + ticketType + " | Destination: " + destination + " | Name: " + nameText
+                        + " | Money Paid: ₱" + moneyPaid + " | Paid: "
                         + isPaid);
         idNameLabel.setBorder(BorderFactory.createEmptyBorder(2, 0, 0, 0));
         iconPanel.add(idNameLabel, BorderLayout.NORTH);

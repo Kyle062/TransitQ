@@ -366,14 +366,14 @@ public class LoginForm extends JFrame {
                         if (cash > 10000) {
                             errorMessage.append("• Payment cannot exceed ₱10,000.\n");
                         }
-                        if (cash < 10 && selectedPassengerType.equals("Standard")) {
-                            errorMessage.append("• Standard ticket minimum payment is ₱10.\n");
+                        if (cash < 50 && selectedPassengerType.equals("Standard")) {
+                            errorMessage.append("• Standard ticket minimum payment is ₱50.\n");
                         }
-                        if (cash < 5 && selectedPassengerType.equals("Discounted")) {
-                            errorMessage.append("• Discounted ticket minimum payment is ₱5.\n");
+                        if (cash < 35 && selectedPassengerType.equals("Discounted")) {
+                            errorMessage.append("• Discounted ticket minimum payment is ₱35.\n");
                         }
-                        if (cash < 50 && selectedPassengerType.equals("Vip")) {
-                            errorMessage.append("• VIP ticket minimum payment is ₱50.\n");
+                        if (cash < 100 && selectedPassengerType.equals("Vip")) {
+                            errorMessage.append("• VIP ticket minimum payment is ₱100.\n");
                         }
                     }
                 }
