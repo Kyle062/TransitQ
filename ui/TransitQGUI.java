@@ -22,7 +22,6 @@ public class TransitQGUI extends JFrame {
     private JPanel ticketAreaVisPanel;
     private JPanel ticketAreaContainer;
     private JButton departBusButton;
-    private JButton boardButton;
     private Map<String, JPanel> busPanels;
 
     private javax.swing.Timer blinkTimer;
@@ -146,8 +145,7 @@ public class TransitQGUI extends JFrame {
         int idx = 0;
         // Update the button arrangement section
         String[] buttonOrder = { "SEARCH", "REMOVE", "UPDATE", "ASSIGN BUS",
-                "TICKET PRICES", "REPORTS", "CLEAR LOGS",
-                "BOARD", "DEPART BUS" };
+                "TICKET PRICES", "REPORTS", "CLEAR LOGS", "DEPART BUS" };
 
         for (int i = 0; i < buttonOrder.length; i++) {
             for (Component comp : contentPanel.getComponents()) {
@@ -265,7 +263,6 @@ public class TransitQGUI extends JFrame {
         int busStartX = 180;
         int busStartY = 20;
         int busGap = 20;
-
         java.util.List<String> busOrder = manager.getBusOrder();
 
         if (busPanels != null) {
@@ -321,10 +318,6 @@ public class TransitQGUI extends JFrame {
         contentPanel.add(createStyledButton("REPORTS", 0, 0, 1, 1, e -> showReportOptions()));
         contentPanel.add(createStyledButton("CLEAR LOGS", 0, 0, 1, 1, e -> clearLogsAction()));
         contentPanel.add(createStyledButton("TICKET PRICES", 0, 0, 1, 1, e -> showTicketPrices()));
-
-        boardButton = createStyledButton("BOARD", 0, 0, 1, 1, e -> boardAction());
-        contentPanel.add(boardButton);
-
         departBusButton = createStyledButton("DEPART BUS", 0, 0, 1, 1, e -> departBusAction());
         contentPanel.add(departBusButton);
 
@@ -377,11 +370,7 @@ public class TransitQGUI extends JFrame {
         }
     }
 
-    private void boardAction() {
-        String logMessage = manager.addPassengerToBus();
-        logOperation("BOARD: " + logMessage);
-        updateVisuals();
-    }
+   
 
     private JPanel createBusPanel(String name) {
         JPanel panel = new JPanel() {

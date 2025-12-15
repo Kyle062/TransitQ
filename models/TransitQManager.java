@@ -15,8 +15,8 @@ public class TransitQManager {
     private Queue<Passenger> assignAreaQueue;
     private List<Passenger> servedLog;
 
-    private final int TICKET_AREA_CAPACITY = 50;
-    private final int ASSIGN_AREA_DISPLAY_CAPACITY = 50;
+    private final int TICKET_AREA_CAPACITY = 15;
+    private final int ASSIGN_AREA_DISPLAY_CAPACITY = 15;
     private Map<String, Bus> buses;
     private String currentlyAssignedBusName;
     private List<String> busOrder;
@@ -94,6 +94,7 @@ public class TransitQManager {
         passengers.add(new Passenger("Jennifer Anderson", "City Center", "Standard", "Cash", "48.00"));
         passengers.add(new Passenger("Thomas Martinez", "Amusement Park", "Discounted", "Cash", "42.00"));
         passengers.add(new Passenger("Susan Thompson", "Business District", "Standard", "Cash", "65.00"));
+        passengers.add(new Passenger("Elger Pangantiti", "Davao", "VIP", "Cash", "200.00"));
 
         return passengers;
     }
@@ -252,9 +253,10 @@ public class TransitQManager {
             p.setPaid(paymentVerified);
 
             if (!paymentVerified) {
-                ticketAreaQueue.offer(p);
-                return "PAYMENT ERROR: Passenger ID " + p.getPassengerId() +
-                        " payment verification failed. Moved to end of ticket queue.";
+                removePassenger(p.getPassengerId());
+                // ticketAreaQueue.offer(p);
+                return "DENIED: Passenger ID " + p.getPassengerId() +
+                        " payment verification failed. Removed from system.";
             }
 
             recordPayment(p);
