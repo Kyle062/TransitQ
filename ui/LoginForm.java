@@ -162,10 +162,19 @@ public class LoginForm extends JFrame {
         rightPanel.add(contaField);
 
         // Passenger Types
-        JLabel passengerLabel = new JLabel("Ticket Type: *");
+        JLabel passengerLabel = new JLabel("Ticket Type: ");
         passengerLabel.setFont(new Font("SansSerif", Font.BOLD, 16));
         passengerLabel.setBounds(55, 360, 200, 20);
         rightPanel.add(passengerLabel);
+
+        // Add ticket price info button
+        JButton priceInfoButton = new JButton("ℹ️ Price Info");
+        priceInfoButton.setBounds(150, 360, 100, 25);
+        priceInfoButton.setFont(new Font("SansSerif", Font.PLAIN, 12));
+        priceInfoButton.setBackground(new Color(240, 240, 240));
+        priceInfoButton.setFocusable(false);
+        priceInfoButton.addActionListener(e -> showTicketPriceInfo());
+        rightPanel.add(priceInfoButton);
 
         String passengerTypes[] = { "Standard", "Discounted", "Vip" };
         JComboBox<String> passengerComboBox = new JComboBox<>(passengerTypes);
@@ -418,7 +427,10 @@ public class LoginForm extends JFrame {
                                 successMessage,
                                 "Registration Successful!",
                                 JOptionPane.INFORMATION_MESSAGE);
-
+                        if (mainGUI != null) {
+                            PassengerStatusFrame statusFrame = new PassengerStatusFrame(p, mainGUI.getManager());
+                            statusFrame.setVisible(true);
+                        }
                         // Clear form after successful submission
                         nameTextField.setText("");
                         ageField.setText("");
@@ -633,5 +645,22 @@ public class LoginForm extends JFrame {
         Map<TextAttribute, Object> attributes = new HashMap<>(font.getAttributes());
         attributes.put(TextAttribute.UNDERLINE, TextAttribute.UNDERLINE_ON);
         label.setFont(font.deriveFont(attributes));
+    }
+
+    private void showTicketPriceInfo() {
+        String priceInfo = """
+                <html>
+                <h3>Ticket Price Information</h3>
+                <table border='1' cellpadding='5'>
+                    <tr><th>Ticket Type</th><th>Standard Price</th><th>Requirements</th></tr>
+                    <tr><td>VIP</td><td>₱100.00</td><td>Priority boarding, premium seat</td></tr>
+                    <tr><td>Standard</td><td>₱50.00</td><td>Regular fare</td></tr>
+                    <tr><td>Discounted</td><td>₱35.00</td><td>Students, Seniors, PWD</td></tr>
+                </table>
+                <br><b>Note:</b> Minimum payment required for verification.
+                </html>""";
+
+        JOptionPane.showMessageDialog(this, priceInfo, "Ticket Price Information",
+                JOptionPane.INFORMATION_MESSAGE);
     }
 }

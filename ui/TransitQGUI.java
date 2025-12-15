@@ -144,25 +144,19 @@ public class TransitQGUI extends JFrame {
         int sidebarH = 64;
         int sidebarGap = 18;
         int idx = 0;
+        // Update the button arrangement section
+        String[] buttonOrder = { "SEARCH", "REMOVE", "UPDATE", "ASSIGN BUS",
+                "TICKET PRICES", "REPORTS", "CLEAR LOGS",
+                "BOARD", "DEPART BUS" };
 
-        for (Component comp : contentPanel.getComponents()) {
-            if (comp instanceof JButton) {
-                JButton btn = (JButton) comp;
-                String t = btn.getText();
-                if ("ADD PASSENGER TO THE BUS".equals(t)) {
-                    btn.setFont(new Font("Arial", Font.BOLD, 16));
-                    btn.setBounds(780, 640, 320, 54);
-                } else if ("DEPART BUS".equals(t)) {
-                    btn.setFont(new Font("Arial", Font.BOLD, 18));
-                    btn.setBounds(sidebarX, sidebarYStart + 7 * (sidebarH + sidebarGap), sidebarW, sidebarH);
-                } else if ("BOARD".equals(t)) {
-                    btn.setFont(new Font("Arial", Font.BOLD, 18));
-                    btn.setBounds(sidebarX, sidebarYStart + 6 * (sidebarH + sidebarGap), sidebarW, sidebarH);
-                } else if ("SEARCH".equals(t) || "REMOVE".equals(t) || "UPDATE".equals(t)
-                        || "ASSIGN BUS".equals(t) || "REPORTS".equals(t) || "CLEAR LOGS".equals(t)) {
-                    btn.setFont(new Font("Arial", Font.BOLD, 18));
-                    btn.setBounds(sidebarX, sidebarYStart + idx * (sidebarH + sidebarGap), sidebarW, sidebarH);
-                    idx++;
+        for (int i = 0; i < buttonOrder.length; i++) {
+            for (Component comp : contentPanel.getComponents()) {
+                if (comp instanceof JButton) {
+                    JButton btn = (JButton) comp;
+                    if (btn.getText().equals(buttonOrder[i])) {
+                        btn.setBounds(sidebarX, sidebarYStart + i * (sidebarH + sidebarGap), sidebarW, sidebarH);
+                        break;
+                    }
                 }
             }
         }
@@ -326,6 +320,7 @@ public class TransitQGUI extends JFrame {
         contentPanel.add(createStyledButton("ASSIGN BUS", 0, 0, 1, 1, e -> showEnhancedBusAssignment()));
         contentPanel.add(createStyledButton("REPORTS", 0, 0, 1, 1, e -> showReportOptions()));
         contentPanel.add(createStyledButton("CLEAR LOGS", 0, 0, 1, 1, e -> clearLogsAction()));
+        contentPanel.add(createStyledButton("TICKET PRICES", 0, 0, 1, 1, e -> showTicketPrices()));
 
         boardButton = createStyledButton("BOARD", 0, 0, 1, 1, e -> boardAction());
         contentPanel.add(boardButton);
@@ -1201,4 +1196,50 @@ public class TransitQGUI extends JFrame {
         super.dispose();
     }
 
+    private void showTicketPrices() {
+        String priceInfo = """
+                ===============================
+                TRANSITQ TICKET PRICE LIST
+                ===============================
+
+                🎫 VIP TICKET
+                • Price: ₱100.00
+                • Priority boarding
+                • Guaranteed seating
+                • Premium service
+
+                🎫 STANDARD TICKET
+                • Price: ₱50.00
+                • Regular service
+                • Standard seating
+
+                🎫 DISCOUNTED TICKET
+                • Price: ₱35.00
+                • For: Students, Seniors (60+), PWD
+                • Valid ID required
+                • Standard seating
+
+                ===============================
+                PAYMENT VERIFICATION RULES:
+                • Payment must match or exceed ticket price
+                • No change will be given
+                • Cash payments only
+                • Minimum payment required for boarding
+                ===============================
+                """;
+
+        JTextArea textArea = new JTextArea(priceInfo);
+        textArea.setEditable(false);
+        textArea.setFont(new Font("Monospaced", Font.PLAIN, 14));
+        textArea.setBackground(new Color(240, 248, 255));
+
+        JScrollPane scrollPane = new JScrollPane(textArea);
+        scrollPane.setPreferredSize(new Dimension(500, 400));
+
+        JOptionPane.showMessageDialog(this, scrollPane,
+                "Ticket Price Information",
+                JOptionPane.INFORMATION_MESSAGE);
+
+        logOperation("INFO: Displayed ticket price list.");
+    }
 }
