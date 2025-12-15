@@ -1160,7 +1160,6 @@ public class TransitQGUI extends JFrame {
             }
 
             if (!updates.isEmpty()) {
-                String managerLog = manager.updatePassenger(p.getPassengerId(), newName, newDest, newTicketType);
                 String detailLog = String.join(", ", updates.values());
                 logOperation("UPDATE SUCCESS: ID " + p.getPassengerId() + " updated. Fields changed: " + detailLog);
                 updateVisuals();
