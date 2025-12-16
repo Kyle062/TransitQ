@@ -1,22 +1,15 @@
 package ui;
 
 import javax.swing.*;
-
 import models.Passenger;
 import models.TransitQManager;
-
 import java.awt.*;
-import java.awt.event.KeyEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.font.TextAttribute;
+import java.awt.event.*;
 import java.awt.geom.RoundRectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import javax.imageio.ImageIO;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.regex.Pattern;
 
 public class LoginForm extends JFrame {
@@ -250,11 +243,11 @@ public class LoginForm extends JFrame {
         sendButton.setFont(new Font("SansSerif", Font.BOLD, 15));
         rightPanel.add(sendButton);
 
-        JLabel clickAdmin = new JLabel("Are you a Station Attendant?");
+        JLabel clickAdmin = new JLabel("<html><u>Are you a Station Attendant?</u></html>");
         clickAdmin.setBounds(130, 610, 200, 30);
         clickAdmin.setFont(new Font("SansSerif", Font.PLAIN, 14));
         clickAdmin.setForeground(new Color(82, 181, 247));
-        addUnderline(clickAdmin);
+
         rightPanel.add(clickAdmin);
         clickAdmin.addMouseListener(new MouseAdapter() {
             @Override
@@ -635,16 +628,6 @@ public class LoginForm extends JFrame {
                 g2.dispose();
             }
         };
-    }
-
-    private void addUnderline(JLabel label) {
-        if (label == null) {
-            return;
-        }
-        Font font = label.getFont();
-        Map<TextAttribute, Object> attributes = new HashMap<>(font.getAttributes());
-        attributes.put(TextAttribute.UNDERLINE, TextAttribute.UNDERLINE_ON);
-        label.setFont(font.deriveFont(attributes));
     }
 
     private void showTicketPriceInfo() {

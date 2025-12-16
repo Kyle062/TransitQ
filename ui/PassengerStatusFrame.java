@@ -141,7 +141,7 @@ public class PassengerStatusFrame extends JFrame {
 
         // Update status label
         if (inTicketArea) {
-            statusLabel.setText("📍 Current Location: TICKET AREA");
+            statusLabel.setText("Current Location: TICKET AREA");
             positionLabel
                     .setText("Position in queue: #" + ticketPosition + " of " + manager.getTicketAreaQueue().size());
             statusLabel.setForeground(new Color(255, 153, 0)); // Orange for ticket area
@@ -161,14 +161,14 @@ public class PassengerStatusFrame extends JFrame {
             }
 
             if (isServed) {
-                statusLabel.setText("✅ Status: BOARDED & DEPARTED");
+                statusLabel.setText("Status: BOARDED & DEPARTED");
                 positionLabel.setText("Your bus has departed. Thank you for traveling with us!");
                 statusLabel.setForeground(new Color(0, 100, 0)); // Dark green for boarded
 
                 // Stop timer once boarded
                 refreshTimer.stop();
             } else {
-                statusLabel.setText("❓ Status: NOT FOUND IN SYSTEM");
+                statusLabel.setText("Status: NOT FOUND IN SYSTEM");
                 positionLabel.setText("Please check with station attendant");
                 statusLabel.setForeground(Color.RED);
             }
