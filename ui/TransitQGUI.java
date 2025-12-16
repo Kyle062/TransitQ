@@ -1130,8 +1130,13 @@ public class TransitQGUI extends JFrame {
         String originalDest = p.getDestination();
         String originalTicketType = p.getTicketType();
 
+        // Store the original payment status
+        boolean originalPaidStatus = p.isPaid();
+        String originalMoneyPaid = p.getMoneyPaid();
+
         JTextField nameField = new JTextField(originalName, 15);
         JTextField destField = new JTextField(originalDest, 15);
+        JTextField moneyField = new JTextField(originalMoneyPaid, 15); // Add money field
         String[] ticketTypes = { "Standard", "Discounted", "VIP" };
         JComboBox<String> ticketTypeCombo = new JComboBox<>(ticketTypes);
         ticketTypeCombo.setSelectedItem(originalTicketType);
@@ -1146,6 +1151,40 @@ public class TransitQGUI extends JFrame {
         formPanel.add(destField);
         formPanel.add(new JLabel("Ticket Type:"));
         formPanel.add(ticketTypeCombo);
+        formPanel.add(new JLabel("Money Paid:"));
+        formPanel.add(moneyField);
+
+        // Add validation for money field
+        moneyField.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyTyped(java.awt.event.KeyEvent evt) {
+                char c = evt.getKeyChar();
+                String text = moneyField.getText();
+
+                // Allow digits, decimal point, and control characters
+                if (!Character.isDigit(c) && c != '.' && c != KeyEvent.VK_BACK_SPACE && c != KeyEvent.VK_DELETE) {
+                    evt.consume();
+                    Toolkit.getDefaultToolkit().beep();
+                    return;
+                }
+
+                // Ensure only one decimal point
+                if (c == '.' && text.contains(".")) {
+                    evt.consume();
+                    Toolkit.getDefaultToolkit().beep();
+                    return;
+                }
+
+                // Limit to 2 decimal places
+                if (text.contains(".")) {
+                    int decimalIndex = text.indexOf('.');
+                    if (text.length() - decimalIndex > 2 &&
+                            !(c == KeyEvent.VK_BACK_SPACE || c == KeyEvent.VK_DELETE)) {
+                        evt.consume();
+                        Toolkit.getDefaultToolkit().beep();
+                    }
+                }
+            }
+        });
 
         UIManager.put("OptionPane.background", Color.LIGHT_GRAY);
         UIManager.put("Panel.background", Color.LIGHT_GRAY);
@@ -1158,28 +1197,112 @@ public class TransitQGUI extends JFrame {
         UIManager.put("Panel.background", null);
 
         if (result == JOptionPane.OK_OPTION) {
-            String newName = nameField.getText();
-            String newDest = destField.getText();
+            String newName = nameField.getText().trim();
+            String newDest = destField.getText().trim();
             String newTicketType = (String) ticketTypeCombo.getSelectedItem();
+            String newMoneyPaid = moneyField.getText().trim();
+
+            // Validate inputs
+            if (newName.isEmpty() || newDest.isEmpty() || newMoneyPaid.isEmpty()) {
+                JOptionPane.showMessageDialog(this,
+                        "All fields must be filled out.",
+                        "Update Error",
+                        JOptionPane.ERROR_MESSAGE);
+                logOperation("UPDATE ERROR: Incomplete information for passenger ID " + p.getPassengerId());
+                return;
+            }
+
+            try {
+                double money = Double.parseDouble(newMoneyPaid);
+                if (money < 0) {
+                    JOptionPane.showMessageDialog(this,
+                            "Money paid cannot be negative.",
+                            "Update Error",
+                            JOptionPane.ERROR_MESSAGE);
+                    logOperation("UPDATE ERROR: Invalid money amount for passenger ID " + p.getPassengerId());
+                    return;
+                }
+            } catch (NumberFormatException e) {
+                JOptionPane.showMessageDialog(this,
+                        "Please enter a valid amount for money paid.",
+                        "Update Error",
+                        JOptionPane.ERROR_MESSAGE);
+                logOperation("UPDATE ERROR: Invalid money format for passenger ID " + p.getPassengerId());
+                return;
+            }
+
+            // Update the passenger in the manager - preserving payment status
+            String updateResult = manager.updatePassenger(p.getPassengerId(), newName, newDest, newTicketType);
+
+            // Also update the money field if it changed
+            if (!newMoneyPaid.equals(originalMoneyPaid)) {
+                p.setMoneyPaid(newMoneyPaid);
+
+                // Re-verify payment with new amount
+                boolean paymentVerified = verifyPaymentForUpdate(p, newMoneyPaid, newTicketType);
+                p.setPaid(paymentVerified);
+            }
 
             Map<String, String> updates = new HashMap<>();
             if (!newName.equals(originalName)) {
-                updates.put("Name", originalName + " -> " + newName);
+                updates.put("Name", originalName + " → " + newName);
             }
             if (!newDest.equals(originalDest)) {
-                updates.put("Destination", originalDest + " -> " + newDest);
+                updates.put("Destination", originalDest + " → " + newDest);
             }
             if (!newTicketType.equals(originalTicketType)) {
-                updates.put("Ticket Type", originalTicketType + " -> " + newTicketType);
+                updates.put("Ticket Type", originalTicketType + " → " + newTicketType);
+            }
+            if (!newMoneyPaid.equals(originalMoneyPaid)) {
+                updates.put("Money Paid", "₱" + originalMoneyPaid + " → ₱" + newMoneyPaid);
             }
 
             if (!updates.isEmpty()) {
                 String detailLog = String.join(", ", updates.values());
                 logOperation("UPDATE SUCCESS: ID " + p.getPassengerId() + " updated. Fields changed: " + detailLog);
+
+                // Show success message
+                JOptionPane.showMessageDialog(this,
+                        "Successfully updated passenger ID " + p.getPassengerId() + "\n\n" +
+                                "Updated fields:\n" +
+                                (updates.containsKey("Name") ? "• " + updates.get("Name") + "\n" : "") +
+                                (updates.containsKey("Destination") ? "• " + updates.get("Destination") + "\n" : "") +
+                                (updates.containsKey("Ticket Type") ? "• " + updates.get("Ticket Type") + "\n" : "") +
+                                (updates.containsKey("Money Paid") ? "• " + updates.get("Money Paid") + "\n" : "") +
+                                "\nPayment Status: " + (p.isPaid() ? "VERIFIED ✓" : "UNVERIFIED ✗"),
+                        "Update Successful",
+                        JOptionPane.INFORMATION_MESSAGE);
+
                 updateVisuals();
             } else {
                 logOperation("UPDATE: Passenger ID " + p.getPassengerId() + " update cancelled (no changes made).");
             }
+        }
+    }
+
+    // Helper method to verify payment for updates
+    private boolean verifyPaymentForUpdate(Passenger passenger, String moneyPaid, String ticketType) {
+        try {
+            double amountPaid = Double.parseDouble(moneyPaid);
+            double requiredAmount = 0.0;
+
+            switch (ticketType.toLowerCase()) {
+                case "vip":
+                    requiredAmount = 100.00;
+                    break;
+                case "discounted":
+                    requiredAmount = 35.00;
+                    break;
+                case "standard":
+                default:
+                    requiredAmount = 50.00;
+                    break;
+            }
+
+            return amountPaid >= requiredAmount;
+
+        } catch (NumberFormatException e) {
+            return false;
         }
     }
 

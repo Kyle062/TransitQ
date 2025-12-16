@@ -359,15 +359,10 @@ public class LoginForm extends JFrame {
                         if (cash > 10000) {
                             errorMessage.append("• Payment cannot exceed ₱10,000.\n");
                         }
-                        if (cash < 50 && selectedPassengerType.equals("Standard")) {
-                            errorMessage.append("• Standard ticket minimum payment is ₱50.\n");
+                        if (cash < 0 ) {
+                            errorMessage.append("• Payment must be greater than 0.\n");
                         }
-                        if (cash < 35 && selectedPassengerType.equals("Discounted")) {
-                            errorMessage.append("• Discounted ticket minimum payment is ₱35.\n");
-                        }
-                        if (cash < 100 && selectedPassengerType.equals("Vip")) {
-                            errorMessage.append("• VIP ticket minimum payment is ₱100.\n");
-                        }
+                       
                     }
                 }
 
@@ -636,7 +631,7 @@ public class LoginForm extends JFrame {
                 <h3>Ticket Price Information</h3>
                 <table border='1' cellpadding='5'>
                     <tr><th>Ticket Type</th><th>Standard Price</th><th>Requirements</th></tr>
-                    <tr><td>VIP</td><td>₱100.00</td><td>Priority boarding, premium seat</td></tr>
+                    <tr><td>VIP</td><td>₱100.00</td><td>Premium seat, Air Conditioning</td></tr>
                     <tr><td>Standard</td><td>₱50.00</td><td>Regular fare</td></tr>
                     <tr><td>Discounted</td><td>₱35.00</td><td>Students, Seniors, PWD</td></tr>
                 </table>
