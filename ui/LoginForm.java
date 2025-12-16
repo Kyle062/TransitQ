@@ -332,7 +332,7 @@ public class LoginForm extends JFrame {
 
                 // 5. Validate contact number
                 if (!passengerContact.isEmpty() && !CONTACT_PATTERN.matcher(passengerContact).matches()) {
-                    errorMessage.append("• Contact number must be 10-15 digits (numbers only).\n");
+                    errorMessage.append("• Contact number must be 11 digits (numbers only).\n");
                 }
 
                 // 6. Validate destination
@@ -359,10 +359,10 @@ public class LoginForm extends JFrame {
                         if (cash > 10000) {
                             errorMessage.append("• Payment cannot exceed ₱10,000.\n");
                         }
-                        if (cash < 0 ) {
+                        if (cash < 0) {
                             errorMessage.append("• Payment must be greater than 0.\n");
                         }
-                       
+
                     }
                 }
 
@@ -382,6 +382,31 @@ public class LoginForm extends JFrame {
                             "Please correct the following errors:\n\n" + errorMessage.toString(),
                             "Validation Error",
                             JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+
+                // FIX: Check TICKET AREA capacity (not assign area)
+                // Get the correct manager instance
+                TransitQManager currentManager = (mainGUI != null) ? mainGUI.getManager() : manager;
+
+                if (currentManager.getTicketAreaQueue().size() >= currentManager.getTicketAreaCapacity()) {
+                    // Enhanced message with queue information
+                    String queueInfo = String.format(
+                            "Ticket Area is Full! Currently at maximum capacity (%d/%d).\n\n" +
+                                    "Please wait for passengers to be processed and try again.\n\n" +
+                                    "Status: \n" +
+                                    "- Ticket Area: %d passengers waiting\n" +
+                                    "- Assign Area: %d passengers ready to board\n" +
+                                    "- Next available spot: When a passenger moves to assign area",
+                            currentManager.getTicketAreaQueue().size(),
+                            currentManager.getTicketAreaCapacity(),
+                            currentManager.getTicketAreaQueue().size(),
+                            currentManager.getAssignAreaQueue().size());
+
+                    JOptionPane.showMessageDialog(backgroundPanel,
+                            queueInfo,
+                            "Ticket Area Full",
+                            JOptionPane.WARNING_MESSAGE);
                     return;
                 }
 
@@ -476,9 +501,9 @@ public class LoginForm extends JFrame {
             JTextField paymentField) {
 
         // Create tooltips for guidance
-        nameField.setToolTipText("Enter your full name (letters and spaces only)");
+        nameField.setToolTipText("Enter your user name (letters and spaces only)");
         ageField.setToolTipText("Enter your age (numbers only, 1-120)");
-        contactField.setToolTipText("Enter 10-15 digit phone number");
+        contactField.setToolTipText("Enter 11 digit phone number");
         destinationField.setToolTipText("Enter your destination");
         paymentField.setToolTipText("Enter payment amount (e.g., 100 or 100.50)");
 

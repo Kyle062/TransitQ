@@ -15,23 +15,35 @@ public class TransitQManager {
     // CONSTRUCTOR AND INITIALIZATION METHODS
     // ====================================================================
     // TransitQManager() - Main constructor that initializes all components
-    // createPredefinedPassengers() - Creates list of predefined passengers with sample data
-    // initializeWithPredefinedPassengers() - Adds initial predefined passengers to ticket area
+    // createPredefinedPassengers() - Creates list of predefined passengers with
+    // sample data
+    // initializeWithPredefinedPassengers() - Adds initial predefined passengers to
+    // ticket area
 
     // ====================================================================
     // BUS ASSIGNMENT AND MANAGEMENT METHODS
     // ====================================================================
     // assignBusToQueue(String busName) - Assigns a specific bus to the active queue
     // getAvailableBuses() - Returns list of available (empty) buses
+    // getAllSystemBuses() - Returns list of ALL buses in the system
     // getBusStatusReport() - Generates status report for all buses
     // departBus() - Departs current bus and rotates bus queue
     // assignBus(String busName) - Assigns a bus to active status
+    // addManualBus(String busName) - Adds a bus with custom name and fixed capacity
+    // of 10
+    // isValidBusName(String busName) - Check if bus name is valid
+    // getAllBusNames() - Get list of all bus names
+    // removeBus(String busName) - Removes a bus from the system
+    // getAddableBusNames() - Gets addable bus names
+    // canAddMoreBuses() - Checks if we can add more buses
+    // getNextAvailableBusName() - Gets the next available bus name
     // printBusStatus() - Debug method - prints bus status to console
 
     // ====================================================================
     // PAYMENT VERIFICATION AND FINANCIAL METHODS
     // ====================================================================
-    // verifyPayment(Passenger passenger) - Verifies if passenger paid enough for their ticket type
+    // verifyPayment(Passenger passenger) - Verifies if passenger paid enough for
+    // their ticket type
     // recordPayment(Passenger passenger) - Records payment in financial tracking
     // getPaymentReport() - Generates payment verification report
     // getFinancialReport() - Generates financial summary report
@@ -41,27 +53,28 @@ public class TransitQManager {
     // CORE PASSENGER OPERATION METHODS
     // ====================================================================
     // addPassengerToTicketArea(Passenger p) - Adds passenger to ticket area queue
-    // passPassengerToAssignArea() - Moves passenger from ticket area to assign area with payment verification
+    // passPassengerToAssignArea() - Moves passenger from ticket area to assign area
+    // with payment verification
     // addPassengerToBus() - Boards passenger from assign area to bus
     // searchPassenger(String searchInput) - Searches for passenger by ID or name
     // searchPassengerById(int id) - Searches passenger by ID
     // searchPassengerByName(String name) - Searches passenger by name
-    // updatePassenger(int id, String newName, String newDest, String newTicketType) - Updates passenger information
+    // updatePassenger(int id, String newName, String newDest, String newTicketType)
+    // - Updates passenger information
     // removePassenger(int id) - Removes passenger from system by ID
-
-    // ====================================================================
-    // REPORTING AND EXPORT METHODS
-    // ====================================================================
-    // getComprehensiveReport() - Generates comprehensive system report
 
     // ====================================================================
     // PREDEFINED PASSENGER METHODS
     // ====================================================================
-    // addPredefinedPassengers(int count) - Adds specified number of predefined passengers to ticket area
-    // isPassengerInSystem(Passenger passenger) - Checks if passenger is already in the system
-    // getRemainingPredefinedPassengers() - Returns count of remaining available predefined passengers
+    // addPredefinedPassengers(int count) - Adds specified number of predefined
+    // passengers to ticket area
+    // isPassengerInSystem(Passenger passenger) - Checks if passenger is already in
+    // the system
+    // getRemainingPredefinedPassengers() - Returns count of remaining available
+    // predefined passengers
     // getPredefinedPassengersInfo() - Generates info about predefined passengers
-    // hasAvailablePredefinedPassengers() - Checks if any predefined passengers are available
+    // hasAvailablePredefinedPassengers() - Checks if any predefined passengers are
+    // available
 
     // ====================================================================
     // GETTER AND SETTER METHODS
@@ -78,6 +91,7 @@ public class TransitQManager {
     // getPredefinedPassengers() - Returns copy of predefined passengers list
     // canDepartBus() - Checks if current bus can depart (must be full)
     // isCurrentBusFull() - Checks if current bus is full
+    // getAssignAreaCurrentSize() - Returns current assign area queue size
 
     // Fields declaration...
     private Queue<Passenger> ticketAreaQueue;
@@ -121,15 +135,6 @@ public class TransitQManager {
         this.busOrder = new ArrayList<>(buses.keySet());
         this.currentlyAssignedBusName = busOrder.get(0);
 
-        // Initialize available bus names for rotation
-        this.availableBusNames = new ArrayList<>();
-        availableBusNames.add("BUS E");
-        availableBusNames.add("BUS F");
-        availableBusNames.add("BUS G");
-        availableBusNames.add("BUS H");
-        availableBusNames.add("BUS I");
-        availableBusNames.add("BUS J");
-
         this.newlyGeneratedBus = null;
 
         // Initialize predefined passengers
@@ -152,11 +157,11 @@ public class TransitQManager {
     private List<Passenger> createPredefinedPassengers() {
         List<Passenger> passengers = new ArrayList<>();
 
-        passengers.add(new Passenger("John Smith", "Downtown", "Standard", "Cash", "50.00"));
-        passengers.add(new Passenger("Maria Garcia", "Airport", "VIP", "Cash", "120.00"));
-        passengers.add(new Passenger("David Johnson", "University", "Discounted", "Cash", "35.00"));
-        passengers.add(new Passenger("Sarah Willi", "Shopping Mall", "Standard", "Cash", "45.00"));
-        passengers.add(new Passenger("Mich Brown", "Hospital", "VIP", "Cash", "150.00"));
+        passengers.add(new Passenger("Sofiya Bernardino", "Downtown", "Standard", "Cash", "50.00"));
+        passengers.add(new Passenger("Jiefrey Balagat", "Airport", "VIP", "Cash", "120.00"));
+        passengers.add(new Passenger("Sergio Ba-at", "University", "Discounted", "Cash", "35.00"));
+        passengers.add(new Passenger("Jelbert Forro", "Shopping Mall", "Standard", "Cash", "45.00"));
+        passengers.add(new Passenger("Kyle Trimidal", "Hospital", "VIP", "Cash", "150.00"));
         passengers.add(new Passenger("Emily Davis", "Beach", "Standard", "Cash", "60.00"));
         passengers.add(new Passenger("Robert Miller", "Stadium", "Discounted", "Cash", "40.00"));
         passengers.add(new Passenger("Lisa Wilson", "Convention Center", "Standard", "Cash", "55.00"));
@@ -164,7 +169,7 @@ public class TransitQManager {
         passengers.add(new Passenger("Jenni Anderson", "City Center", "Standard", "Cash", "48.00"));
         passengers.add(new Passenger("Thomas Martinez", "Amusement Park", "Discounted", "Cash", "42.00"));
         passengers.add(new Passenger("Susan Thompson", "Business District", "Standard", "Cash", "65.00"));
-        passengers.add(new Passenger("Elger Panganti", "Davao", "VIP", "Cash", "200.00"));
+        passengers.add(new Passenger("Elger Panganti", "City Center", "VIP", "Cash", "200.00"));
 
         return passengers;
     }
@@ -209,6 +214,12 @@ public class TransitQManager {
                 bus.getCurrentLoad() + "/" + bus.getCapacity();
     }
 
+    // Returns list of ALL buses in the system (including those not in current
+    // rotation)
+    public List<String> getAllSystemBuses() {
+        return new ArrayList<>(buses.keySet());
+    }
+
     // Returns list of available (empty) buses
     public List<String> getAvailableBuses() {
         List<String> available = new ArrayList<>();
@@ -216,8 +227,8 @@ public class TransitQManager {
             String busName = entry.getKey();
             Bus bus = entry.getValue();
 
-            if (!bus.isFull() && bus.getCurrentLoad() == 0 &&
-                    !busName.equals(currentlyAssignedBusName)) {
+            // Changed condition: include all buses that are not full and empty
+            if (!bus.isFull() && bus.getCurrentLoad() == 0) {
                 available.add(busName);
             }
         }
@@ -519,8 +530,6 @@ public class TransitQManager {
         return String.format("%02d:%02d:%02d", hours, minutes, seconds);
     }
 
-   
-
     // --- Existing Utility Methods ---
 
     // Searches for passenger by ID or name
@@ -619,6 +628,10 @@ public class TransitQManager {
     // Returns assign area display capacity
     public int getAssignAreaDisplayCapacity() {
         return ASSIGN_AREA_DISPLAY_CAPACITY;
+    }
+
+    public int getAssignAreaCurrentSize() {
+        return assignAreaQueue.size();
     }
 
     // Returns currently assigned bus name
@@ -789,5 +802,38 @@ public class TransitQManager {
             }
         }
         System.out.println("==================");
+    }
+
+    // Adds a bus with custom name and fixed capacity of 10
+    public String addManualBus(String busName) {
+        if (busName == null || busName.trim().isEmpty()) {
+            return "ERROR: Bus name cannot be empty.";
+        }
+
+        String formattedName = busName.trim().toUpperCase();
+
+        // Check if bus already exists
+        if (buses.containsKey(formattedName)) {
+            return "ERROR: Bus " + formattedName + " already exists.";
+        }
+
+        // Create and add the new bus with fixed capacity of 10
+        buses.put(formattedName, new Bus(formattedName, 10));
+        busOrder.add(formattedName);
+
+        return "SUCCESS: Bus " + formattedName + " added to system. Capacity: 10 passengers.";
+    }
+
+    // Check if bus name is valid
+    public boolean isValidBusName(String busName) {
+        if (busName == null || busName.trim().isEmpty()) {
+            return false;
+        }
+        return !busName.trim().isEmpty();
+    }
+
+    // Get list of all bus names
+    public List<String> getAllBusNames() {
+        return new ArrayList<>(buses.keySet());
     }
 }

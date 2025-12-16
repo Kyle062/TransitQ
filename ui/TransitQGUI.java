@@ -6,7 +6,9 @@ import models.Passenger;
 import models.TransitQManager;
 import java.awt.*;
 import java.awt.event.*;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 
@@ -17,53 +19,100 @@ public class TransitQGUI extends JFrame {
     // TransitQGUI() - Main constructor that initializes the GUI with look and feel,
     // sets up panels, and starts the application.
     // startBlinkTimer() - Starts a timer for blinking queue indicators.
+    // initializeLookAndFeel() - Sets up the GUI look and feel
+    // calculateDimensions() - Calculates dimensions for GUI components
+    // setupMainWindow() - Configures the main window properties
+    // createMainLayout() - Creates the main layout with log and content panels
+    // setupDynamicLayoutListener() - Sets up component resize listener
 
     // ====================================================================
     // MANAGER AND LOGGING METHODS
     // ====================================================================
     // getManager() - Returns the TransitQManager instance.
-    // logOperation(String message) - Adds timestamped messages to the operation log area.
+    // logOperation(String message) - Adds timestamped messages to the operation log
+    // area.
 
     // ====================================================================
     // GUI SETUP AND LAYOUT METHODS
     // ====================================================================
-    // updateQueueIndicators() - Updates blinking indicators in ticket and assign areas.
-    // updateLayoutForContentPanelSize(JPanel contentPanel) - Dynamically adjusts layout
-    // based on window size changes.
-    // updateBusPositions(JPanel innerRightPanel) - Updates positions of bus panels in the layout.
+    // updateQueueIndicators() - Updates blinking indicators in ticket and assign
+    // areas.
+    // updateLayoutForContentPanelSize(JPanel contentPanel) - Dynamically adjusts
+    // layout based on window size changes.
+    // updateBusPositions(JPanel innerRightPanel) - Updates positions of bus panels
+    // in the layout.
+    // positionSidebarButtons(JPanel contentPanel) - Positions sidebar buttons
+    // positionRightPanelComponents(JPanel contentPanel) - Positions right panel
+    // components
+    // findInnerRightPanel(JPanel contentPanel) - Finds the inner right panel
+    // positionAssignArea(JPanel innerRightPanel, int innerW, int innerH) -
+    // Positions assign area
+    // positionRedSeparator(JPanel innerRightPanel, int innerW, int innerH) -
+    // Positions red separator
+    // positionTicketAreaContainer(JPanel innerRightPanel, int innerW, int innerH) -
+    // Positions ticket area
+    // positionTicketAreaButtons(JPanel contentPanel) - Positions ticket area
+    // buttons
+    // positionAddToBusButton(JPanel contentPanel) - Positions add to bus button
+    // updateInnerRightPanelRepaint(JPanel contentPanel) - Updates inner right panel
+    // repaint
 
     // ====================================================================
     // PANEL CREATION METHODS
     // ====================================================================
-    // createMainContentPanel() - Creates and configures the main content panel with all UI components.
-    // initializeBusPanels(JPanel rightJPanel) - Initializes bus panels from manager's bus order.
-    // addNewBusPanel(String busName, JPanel rightJPanel) - Dynamically adds a new bus panel to the display.
+    // createMainContentPanel() - Creates and configures the main content panel with
+    // all UI components.
+    // createSidebarButtons(JPanel contentPanel) - Creates sidebar buttons
+    // createRightPanel(JPanel contentPanel) - Creates the right panel
+    // createInnerRightPanel() - Creates the inner right panel
+    // createBusVisualization(JPanel rightJPanel) - Creates bus visualization
+    // createPassengerQueueAreas(JPanel rightJPanel) - Creates passenger queue areas
+    // createActionButtons(JPanel rightJPanel) - Creates action buttons
+    // createVisualElements(JPanel rightJPanel) - Creates visual elements
+    // initializeBusPanels(JPanel rightJPanel) - Initializes bus panels from
+    // manager's bus order.
+    // addNewBusPanel(String busName, JPanel rightJPanel) - Dynamically adds a new
+    // bus panel to the display.
     // createBusPanel(String name) - Creates a visual panel representation of a bus.
-    // createLogPanel() - Creates the operation log panel at the bottom of the window.
-    // createStyledButton(String text, int x, int y, int w, int h, ActionListenerlistener) - Creates a styled button with hover effects.
+    // createLogPanel() - Creates the operation log panel at the bottom of the
+    // window.
+    // createStyledButton(String text, int x, int y, int w, int h,
+    // ActionListener listener) - Creates a styled button with hover effects.
     // createAssignAreaVisPanel(int width, int height) - Creates the assign area
     // visualization panel.
-    // createTicketAreaContainer(int width, int height) - Creates the ticket are container panel.
+    // createTicketAreaContainer(int width, int height) - Creates the ticket area
+    // container panel.
 
     // ====================================================================
     // VISUALIZATION METHODS
     // ====================================================================
-    // updateVisuals() - Updates all visual components including buses, queues, and buttons.
-    // createPassengerIcon(...) - Creates a visual icon representation of a passenger.
+    // updateVisuals() - Updates all visual components including buses, queues, and
+    // buttons.
+    // updateBusButtonStates() - Updates bus button states
+    // updateBusVisuals() - Updates bus visual representations
+    // updateAssignAreaVisuals() - Updates assign area visuals
+    // updateTicketAreaVisuals() - Updates ticket area visuals
+    // createPassengerIcon(...) - Creates a visual icon representation of a
+    // passenger.
     // generateColorFromId(int id) - Generates a unique color based on passenger ID.
 
     // ====================================================================
     // ACTION METHODS (USER INTERACTIONS)
     // ====================================================================
-    // showAddPassengerForm() - Shows a dialog form to add a new passenger to ticket area.
+    // showAddPassengerForm() - Shows a dialog form to add a new passenger to ticket
+    // area.
     // passPassengerAction() - Passes passenger from ticket area to assign area.
     // addPassengerToBusAction() - Adds passenger from assign area to bus.
     // departBusAction() - Handles bus departure (only when bus is full).
-    // showEnhancedBusAssignment() - Shows dialog for assigning different buses to active queue.
+    // showEnhancedBusAssignment() - Shows dialog for assigning different buses to
+    // active queue.
+    // showAssignBusDialog() - Shows dialog to assign any bus to front
+    // showAddBusDialog() - Shows dialog to add a new bus
     // searchPassengerAction() - Searches for passenger by ID or name.
     // removePassengerAction() - Removes passenger from system.
     // updatePassengerAction() - Updates passenger information with validation.
-    // verifyPaymentForUpdate(...) - Helper method to verify payment for updated passengers.
+    // verifyPaymentForUpdate(...) - Helper method to verify payment for updated
+    // passengers.
 
     // ====================================================================
     // REPORT METHODS
@@ -82,11 +131,7 @@ public class TransitQGUI extends JFrame {
     // updateAllBusPanels() - Updates all bus panels after changes.
     // clearLogsAction() - Clears operation logs.
     // showTicketPrices() - Displays ticket price information.
-
-    // ====================================================================
-    // LIFECYCLE METHODS
-    // ====================================================================
-    // dispose() - Cleans up resources (stops timers) when closing the window.
+    // logoutAction() - Handles user logout
 
     private TransitQManager manager = new TransitQManager();
     private JTextArea logArea;
@@ -100,6 +145,7 @@ public class TransitQGUI extends JFrame {
     private boolean blinkState = true;
 
     private JButton addToBusButton;
+    private JButton logoutButton;
     private int addBtnOffsetX = 0;
     private int addBtnOffsetY = 0;
     private boolean addBtnUseAbsolute = false;
@@ -193,7 +239,7 @@ public class TransitQGUI extends JFrame {
                     if (contentPanel.getWidth() > 0 && contentPanel.getHeight() > 0 &&
                             (contentPanel.getWidth() != CURRENT_CONTENT_WIDTH
                                     || contentPanel.getHeight() != CURRENT_CONTENT_HEIGHT)) {
-                        
+
                         CURRENT_CONTENT_WIDTH = contentPanel.getWidth();
                         CURRENT_CONTENT_HEIGHT = contentPanel.getHeight();
                         updateLayoutForContentPanelSize(contentPanel);
@@ -215,7 +261,11 @@ public class TransitQGUI extends JFrame {
         contentPanel.add(createStyledButton("CLEAR LOGS", 0, 0, 1, 1, e -> clearLogsAction()));
         contentPanel.add(createStyledButton("TICKET PRICES", 0, 0, 1, 1, e -> showTicketPrices()));
         departBusButton = createStyledButton("DEPART BUS", 0, 0, 1, 1, e -> departBusAction());
+        logoutButton = createStyledButton("LOGOUT", 0, 0, 1, 1, e -> logoutAction());
+
+        contentPanel.add(createStyledButton("BUS MANAGER", 0, 0, 1, 1, e -> showEnhancedBusAssignment()));
         contentPanel.add(departBusButton);
+        contentPanel.add(logoutButton);
     }
 
     // ====================================================================
@@ -224,17 +274,17 @@ public class TransitQGUI extends JFrame {
     private JPanel createMainContentPanel() {
         JPanel contentPanel = new JPanel(null);
         contentPanel.setBackground(White);
-        
+
         createSidebarButtons(contentPanel);
         createRightPanel(contentPanel);
-        
+
         return contentPanel;
     }
 
     private void createRightPanel(JPanel contentPanel) {
         JPanel rightJPanel = createInnerRightPanel();
         contentPanel.add(rightJPanel);
-        
+
         createBusVisualization(rightJPanel);
         createPassengerQueueAreas(rightJPanel);
         createActionButtons(rightJPanel);
@@ -286,7 +336,7 @@ public class TransitQGUI extends JFrame {
     private void createActionButtons(JPanel rightJPanel) {
         rightJPanel.add(createStyledButton("ADD PASSENGER", 0, 0, 1, 1, e -> showAddPassengerForm()));
         rightJPanel.add(createStyledButton("PASS PASSENGER", 0, 0, 1, 1, e -> passPassengerAction()));
-        
+
         addToBusButton = createStyledButton("ADD PASSENGER TO THE BUS", 0, 0, 1, 1, e -> addPassengerToBusAction());
         rightJPanel.add(addToBusButton);
         addBtnUseAbsolute = true;
@@ -334,7 +384,7 @@ public class TransitQGUI extends JFrame {
         positionRightPanelComponents(contentPanel);
         positionTicketAreaButtons(contentPanel);
         positionAddToBusButton(contentPanel);
-        
+
         contentPanel.revalidate();
         contentPanel.repaint();
         updateInnerRightPanelRepaint(contentPanel);
@@ -346,9 +396,9 @@ public class TransitQGUI extends JFrame {
         int sidebarW = 170;
         int sidebarH = 64;
         int sidebarGap = 18;
-        
+
         String[] buttonOrder = { "SEARCH", "REMOVE", "UPDATE", "ASSIGN BUS",
-                "TICKET PRICES", "REPORTS", "CLEAR LOGS", "DEPART BUS" };
+                "TICKET PRICES", "REPORTS", "CLEAR LOGS", "DEPART BUS", "LOGOUT" };
 
         for (int i = 0; i < buttonOrder.length; i++) {
             for (Component comp : contentPanel.getComponents()) {
@@ -431,7 +481,8 @@ public class TransitQGUI extends JFrame {
 
     private void positionTicketAreaButtons(JPanel contentPanel) {
         JPanel innerRightPanel = findInnerRightPanel(contentPanel);
-        if (innerRightPanel == null) return;
+        if (innerRightPanel == null)
+            return;
 
         for (Component comp : innerRightPanel.getComponents()) {
             if (comp instanceof JButton) {
@@ -472,7 +523,7 @@ public class TransitQGUI extends JFrame {
                     int innerY = 20;
                     int innerW = Math.max((int) (CURRENT_CONTENT_WIDTH * 0.75), 1700);
                     int innerH = Math.max((int) (CURRENT_CONTENT_HEIGHT * 0.78), 720);
-                    
+
                     int baseBigX = innerX + (innerW / 2) - (bigW / 2) - 80;
                     int baseBigY = innerY + innerH - 200;
                     int bigX = baseBigX + addBtnOffsetX;
@@ -497,28 +548,42 @@ public class TransitQGUI extends JFrame {
     // BUS MANAGEMENT METHODS
     // ====================================================================
     private void updateBusPositions(JPanel innerRightPanel) {
+        if (innerRightPanel == null)
+            return;
+
         int busW = 150;
         int busH = 150;
         int busStartX = 180;
         int busStartY = 20;
         int busGap = 20;
-        java.util.List<String> busOrder = manager.getBusOrder();
 
-        if (busPanels != null) {
-            for (int i = 0; i < busOrder.size(); i++) {
-                String busName = busOrder.get(i);
-                JPanel busPanel = busPanels.get(busName);
-                if (busPanel != null) {
-                    int busY = busStartY + (i * (busH + busGap));
-                    busPanel.setBounds(busStartX, busY, busW, busH);
-                    busPanel.setVisible(true);
-                }
+        // Get the bus order from manager
+        List<String> busOrder = manager.getBusOrder();
+
+        // Ensure we don't show more than a certain number of buses (e.g., 4)
+        int maxVisibleBuses = 4;
+        List<String> visibleBuses = new ArrayList<>();
+
+        // Add buses in order until we reach the limit
+        for (int i = 0; i < Math.min(busOrder.size(), maxVisibleBuses); i++) {
+            visibleBuses.add(busOrder.get(i));
+        }
+
+        // Position visible buses
+        for (int i = 0; i < visibleBuses.size(); i++) {
+            String busName = visibleBuses.get(i);
+            JPanel busPanel = busPanels.get(busName);
+            if (busPanel != null) {
+                int busY = busStartY + (i * (busH + busGap));
+                busPanel.setBounds(busStartX, busY, busW, busH);
+                busPanel.setVisible(true);
             }
+        }
 
-            for (String busName : busPanels.keySet()) {
-                if (!busOrder.contains(busName)) {
-                    busPanels.get(busName).setVisible(false);
-                }
+        // Hide any buses that shouldn't be visible
+        for (String busName : busPanels.keySet()) {
+            if (!visibleBuses.contains(busName)) {
+                busPanels.get(busName).setVisible(false);
             }
         }
     }
@@ -538,8 +603,16 @@ public class TransitQGUI extends JFrame {
             JPanel busPanel = createBusPanel(busName);
             busPanels.put(busName, busPanel);
             rightJPanel.add(busPanel);
+
+            // Add to the beginning of the bus order
+            List<String> busOrder = manager.getBusOrder();
+            if (!busOrder.contains(busName)) {
+                busOrder.add(0, busName);
+            }
+
             rightJPanel.revalidate();
             rightJPanel.repaint();
+            updateBusPositions(rightJPanel);
         }
     }
 
@@ -1007,52 +1080,121 @@ public class TransitQGUI extends JFrame {
     // BUS ASSIGNMENT METHODS
     // ====================================================================
     private void showEnhancedBusAssignment() {
-        java.util.List<String> availableBuses = manager.getAvailableBuses();
-        String currentBus = manager.getCurrentlyAssignedBusName();
+        // Simple dialog with options
+        String[] options = { "Assign Bus", "Add New Bus", "Cancel" };
+        int choice = JOptionPane.showOptionDialog(this,
+                "Select an option:",
+                "Bus Management",
+                JOptionPane.DEFAULT_OPTION,
+                JOptionPane.QUESTION_MESSAGE,
+                null,
+                options,
+                options[0]);
 
-        if (availableBuses.isEmpty()) {
+        switch (choice) {
+            case 0: // Assign Bus
+                showAssignBusDialog();
+                break;
+            case 1: // Add New Bus
+                showAddBusDialog();
+                break;
+            // case 2: Cancel - do nothing
+        }
+    }
+
+    private void showAssignBusDialog() {
+        // Get ALL buses in the system
+        List<String> allBuses = manager.getAllSystemBuses();
+
+        if (allBuses.isEmpty()) {
             JOptionPane.showMessageDialog(this,
-                    "No available buses to assign. All buses are either full or currently assigned.",
-                    "No Available Buses",
+                    "No buses available in the system.",
+                    "No Buses Available",
                     JOptionPane.WARNING_MESSAGE);
             return;
         }
 
-        JPanel panel = new JPanel(new BorderLayout(10, 10));
-        panel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        JComboBox<String> busCombo = new JComboBox<>(allBuses.toArray(new String[0]));
 
-        JTextArea statusArea = new JTextArea(manager.getBusStatusReport());
-        statusArea.setEditable(false);
-        statusArea.setFont(new Font("Monospaced", Font.PLAIN, 12));
-        JScrollPane statusScroll = new JScrollPane(statusArea);
-        statusScroll.setPreferredSize(new Dimension(400, 200));
-
-        JPanel selectionPanel = new JPanel(new FlowLayout());
-        selectionPanel.add(new JLabel("Select Bus to Assign:"));
-        JComboBox<String> busCombo = new JComboBox<>(availableBuses.toArray(new String[0]));
-        selectionPanel.add(busCombo);
-
-        panel.add(new JLabel("Current Bus Status:"), BorderLayout.NORTH);
-        panel.add(statusScroll, BorderLayout.CENTER);
-        panel.add(selectionPanel, BorderLayout.SOUTH);
+        JPanel panel = new JPanel();
+        panel.add(new JLabel("Select any bus to assign:"));
+        panel.add(busCombo);
 
         int result = JOptionPane.showConfirmDialog(this, panel,
-                "Assign Bus to Queue", JOptionPane.OK_CANCEL_OPTION,
-                JOptionPane.INFORMATION_MESSAGE);
+                "Assign Any Bus to Front",
+                JOptionPane.OK_CANCEL_OPTION);
 
         if (result == JOptionPane.OK_OPTION) {
             String selectedBus = (String) busCombo.getSelectedItem();
-            if (selectedBus != null) {
-                String logMessage = manager.assignBusToQueue(selectedBus);
-                logOperation("ASSIGN BUS: " + logMessage);
-                updateVisuals();
 
-                JOptionPane.showMessageDialog(this,
-                        "Successfully assigned " + selectedBus + " to the queue.\n" +
-                                "Current assigned bus: " + manager.getCurrentlyAssignedBusName(),
-                        "Bus Assigned",
-                        JOptionPane.INFORMATION_MESSAGE);
+            // If this bus is not currently visible, make it visible
+            if (!busPanels.containsKey(selectedBus)) {
+                JPanel innerRightPanel = findInnerRightPanel();
+                if (innerRightPanel != null) {
+                    addNewBusPanel(selectedBus, innerRightPanel);
+                }
             }
+
+            // Assign the bus to the front
+            manager.assignBus(selectedBus);
+            logOperation("ASSIGN BUS: " + selectedBus + " assigned to front of queue.");
+
+            // Force this bus to be at the front of the visual queue
+            List<String> busOrder = manager.getBusOrder();
+            if (busOrder.contains(selectedBus)) {
+                busOrder.remove(selectedBus);
+                busOrder.add(0, selectedBus);
+            }
+
+            updateVisuals();
+
+            JOptionPane.showMessageDialog(this,
+                    selectedBus + " has been assigned to the front!\n" +
+                            "Previous bus moved back in the queue.",
+                    "Bus Assigned",
+                    JOptionPane.INFORMATION_MESSAGE);
+        }
+    }
+
+    private void showAddBusDialog() {
+        // Simple input dialog
+        String busName = JOptionPane.showInputDialog(this,
+                "Enter bus name (e.g., BUS X, BUS 101):",
+                "Add New Bus",
+                JOptionPane.PLAIN_MESSAGE);
+
+        if (busName == null || busName.trim().isEmpty()) {
+            return; // User cancelled
+        }
+
+        String formattedName = busName.trim().toUpperCase();
+
+        // Check if bus already exists
+        if (manager.getAllBusNames().contains(formattedName)) {
+            JOptionPane.showMessageDialog(this,
+                    "Bus '" + formattedName + "' already exists.",
+                    "Duplicate Bus",
+                    JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        // Add the bus
+        String result = manager.addManualBus(busName);
+        logOperation("ADD BUS: " + result);
+
+        if (result.startsWith("SUCCESS")) {
+            manager.addManualBus(busName);
+            updateVisuals();
+
+            JOptionPane.showMessageDialog(this,
+                    result,
+                    "Bus Added",
+                    JOptionPane.INFORMATION_MESSAGE);
+        } else {
+            JOptionPane.showMessageDialog(this,
+                    result,
+                    "Add Bus Error",
+                    JOptionPane.ERROR_MESSAGE);
         }
     }
 
@@ -1060,8 +1202,8 @@ public class TransitQGUI extends JFrame {
     // REPORT METHODS
     // ====================================================================
     private void showReportOptions() {
-        String[] options = { "Quick Summary", "Payment Report", "Financial Report",
-                "Bus Status", "Comprehensive Report", "Export Report" };
+        String[] options = { "Payment Report", "Financial Report",
+                "Bus Status", "Comprehensive Report" };
         int choice = JOptionPane.showOptionDialog(this,
                 "Select Report Type:",
                 "Generate Report",
@@ -1072,35 +1214,19 @@ public class TransitQGUI extends JFrame {
                 options[0]);
 
         switch (choice) {
-            case 0: // Quick Summary
-                showQuickSummary();
-                break;
-            case 1: // Payment Report
+            case 0: // Payment Report
                 showPaymentReport();
                 break;
-            case 2: // Financial Report
+            case 1: // Financial Report
                 showFinancialReport();
                 break;
-            case 3: // Bus Status
+            case 2: // Bus Status
                 showBusStatusReport();
                 break;
-            case 4: // Comprehensive Report
+            case 3: // Comprehensive Report
                 showComprehensiveReport();
                 break;
         }
-    }
-
-    private void showQuickSummary() {
-        int served = manager.getServedLog().size();
-        String report = "--- Quick Summary ---\n" +
-                "Total Passengers Served: " + served + "\n" +
-                "Passengers Waiting (Ticket Area): " + manager.getTicketAreaQueue().size() + "\n" +
-                "Passengers Assigned (Boarding Area): " + manager.getAssignAreaQueue().size() + "\n" +
-                "Currently Assigned Bus: " + manager.getCurrentlyAssignedBusName() + "\n" +
-                "Total Cash Collected: ₱" + String.format("%.2f", getTotalCashCollected());
-
-        logOperation("REPORT: Generated quick summary. Total Served: " + served);
-        JOptionPane.showMessageDialog(this, report, "Quick Summary", JOptionPane.INFORMATION_MESSAGE);
     }
 
     private void showPaymentReport() {
@@ -1485,8 +1611,6 @@ public class TransitQGUI extends JFrame {
 
                 🎫 VIP TICKET
                 • Price: ₱100.00
-                • Priority boarding
-                • Guaranteed seating
                 • Premium service
 
                 🎫 STANDARD TICKET
@@ -1526,6 +1650,20 @@ public class TransitQGUI extends JFrame {
 
     private double getTotalCashCollected() {
         return 0.0; // Placeholder
+    }
+
+    private void logoutAction() {
+        int result = JOptionPane.showConfirmDialog(this,
+                "Are you sure you want to logout?",
+                "Confirm Logout",
+                JOptionPane.YES_NO_OPTION,
+                JOptionPane.QUESTION_MESSAGE);
+
+        if (result == JOptionPane.YES_OPTION) {
+            logOperation("USER: Logged out from TransitQ system.");
+            dispose();
+            new LoginForm().setVisible(true);
+        }
     }
 
     // ====================================================================
