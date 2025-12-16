@@ -11,6 +11,75 @@ import java.util.stream.Collectors;
 import java.time.LocalDateTime;
 
 public class TransitQManager {
+    // ====================================================================
+    // CONSTRUCTOR AND INITIALIZATION METHODS
+    // ====================================================================
+    // TransitQManager() - Main constructor that initializes all components
+    // createPredefinedPassengers() - Creates list of predefined passengers with sample data
+    // initializeWithPredefinedPassengers() - Adds initial predefined passengers to ticket area
+
+    // ====================================================================
+    // BUS ASSIGNMENT AND MANAGEMENT METHODS
+    // ====================================================================
+    // assignBusToQueue(String busName) - Assigns a specific bus to the active queue
+    // getAvailableBuses() - Returns list of available (empty) buses
+    // getBusStatusReport() - Generates status report for all buses
+    // departBus() - Departs current bus and rotates bus queue
+    // assignBus(String busName) - Assigns a bus to active status
+    // printBusStatus() - Debug method - prints bus status to console
+
+    // ====================================================================
+    // PAYMENT VERIFICATION AND FINANCIAL METHODS
+    // ====================================================================
+    // verifyPayment(Passenger passenger) - Verifies if passenger paid enough for their ticket type
+    // recordPayment(Passenger passenger) - Records payment in financial tracking
+    // getPaymentReport() - Generates payment verification report
+    // getFinancialReport() - Generates financial summary report
+    // getUptimeString() - Calculates system uptime as string
+
+    // ====================================================================
+    // CORE PASSENGER OPERATION METHODS
+    // ====================================================================
+    // addPassengerToTicketArea(Passenger p) - Adds passenger to ticket area queue
+    // passPassengerToAssignArea() - Moves passenger from ticket area to assign area with payment verification
+    // addPassengerToBus() - Boards passenger from assign area to bus
+    // searchPassenger(String searchInput) - Searches for passenger by ID or name
+    // searchPassengerById(int id) - Searches passenger by ID
+    // searchPassengerByName(String name) - Searches passenger by name
+    // updatePassenger(int id, String newName, String newDest, String newTicketType) - Updates passenger information
+    // removePassenger(int id) - Removes passenger from system by ID
+
+    // ====================================================================
+    // REPORTING AND EXPORT METHODS
+    // ====================================================================
+    // getComprehensiveReport() - Generates comprehensive system report
+
+    // ====================================================================
+    // PREDEFINED PASSENGER METHODS
+    // ====================================================================
+    // addPredefinedPassengers(int count) - Adds specified number of predefined passengers to ticket area
+    // isPassengerInSystem(Passenger passenger) - Checks if passenger is already in the system
+    // getRemainingPredefinedPassengers() - Returns count of remaining available predefined passengers
+    // getPredefinedPassengersInfo() - Generates info about predefined passengers
+    // hasAvailablePredefinedPassengers() - Checks if any predefined passengers are available
+
+    // ====================================================================
+    // GETTER AND SETTER METHODS
+    // ====================================================================
+    // getTicketAreaQueue() - Returns copy of ticket area queue
+    // getAssignAreaQueue() - Returns copy of assign area queue
+    // getServedLog() - Returns copy of served passengers log
+    // getTicketAreaCapacity() - Returns ticket area capacity
+    // getAssignAreaDisplayCapacity() - Returns assign area display capacity
+    // getCurrentlyAssignedBusName() - Returns currently assigned bus name
+    // getBuses() - Returns copy of buses map
+    // getBusOrder() - Returns copy of bus order list
+    // getNewlyGeneratedBus() - Gets newly generated bus name and resets it
+    // getPredefinedPassengers() - Returns copy of predefined passengers list
+    // canDepartBus() - Checks if current bus can depart (must be full)
+    // isCurrentBusFull() - Checks if current bus is full
+
+    // Fields declaration...
     private Queue<Passenger> ticketAreaQueue;
     private Queue<Passenger> assignAreaQueue;
     private List<Passenger> servedLog;
@@ -450,16 +519,7 @@ public class TransitQManager {
         return String.format("%02d:%02d:%02d", hours, minutes, seconds);
     }
 
-    // Exports comprehensive report to file
-    public boolean exportReportToFile(String filename) {
-        try (java.io.PrintWriter writer = new java.io.PrintWriter(filename)) {
-            writer.println(getComprehensiveReport());
-            return true;
-        } catch (java.io.IOException e) {
-            System.err.println("Error exporting report: " + e.getMessage());
-            return false;
-        }
-    }
+   
 
     // --- Existing Utility Methods ---
 
