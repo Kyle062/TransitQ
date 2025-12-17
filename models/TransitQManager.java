@@ -141,7 +141,6 @@ public class TransitQManager {
         availableBusNames.add("BUS F");
         availableBusNames.add("BUS G");
         availableBusNames.add("BUS H");
-       
 
         // Initialize bus order and set the first bus as currently assigned
         this.busOrder = new ArrayList<>(buses.keySet());
@@ -374,14 +373,61 @@ public class TransitQManager {
         return new ArrayList<>(buses.keySet());
     }
 
+    // ====================================================================
+    // BUS PEEK METHOD
+    // ====================================================================
+    // peekBus() - Returns details of the bus at the top of the queue without
+    // removing it
 
-    //Add SystemBuss 
+    public String peekBus() {
+        if (busOrder.isEmpty()) {
+            return "ERROR: No buses in the queue.";
+        }
+
+        String topBusName = busOrder.get(0);
+        Bus topBus = buses.get(topBusName);
+
+        if (topBus == null) {
+            return "ERROR: Bus " + topBusName + " not found.";
+        }
+
+        StringBuilder details = new StringBuilder();
+        details.append("=== BUS AT TOP OF QUEUE ===\n");
+        details.append("Bus Name: ").append(topBusName).append("\n");
+        details.append("Status: ").append(topBusName.equals(currentlyAssignedBusName) ? "[ACTIVE]" : "[INACTIVE]")
+                .append("\n");
+        details.append("Current Load: ").append(topBus.getCurrentLoad()).append("/").append(topBus.getCapacity())
+                .append("\n");
+        details.append("Is Full: ").append(topBus.isFull() ? "YES" : "NO").append("\n");
+        details.append("Available Seats: ").append(topBus.getCapacity() - topBus.getCurrentLoad()).append("\n");
+        details.append("---------------------------\n");
+        details.append("Next Buses in Queue:\n");
+
+        // Show next 3 buses
+        int count = Math.min(3, busOrder.size() - 1);
+        for (int i = 1; i <= count; i++) {
+            String nextBusName = busOrder.get(i);
+            Bus nextBus = buses.get(nextBusName);
+            if (nextBus != null) {
+                details.append(i).append(". ").append(nextBusName)
+                        .append(" (").append(nextBus.getCurrentLoad()).append("/").append(nextBus.getCapacity())
+                        .append(")");
+                if (nextBus.isFull()) {
+                    details.append(" [FULL]");
+                }
+                details.append("\n");
+            }
+        }
+
+        return details.toString();
+    }
+
+    // Add SystemBuss
     public void addSystemBus(String busName) {
         if (!buses.containsKey(busName)) {
             buses.put(busName, new Bus(busName, 10));
         }
     }
-
 
     // Returns list of available (empty) buses
     public List<String> getAvailableBuses() {
@@ -837,11 +883,11 @@ public class TransitQManager {
 
         // Create and add the new bus with fixed capacity of 10
         buses.put(formattedName, new Bus(formattedName, 10));
-        busOrder.add(formattedName);
 
         return "SUCCESS: Bus " + formattedName + " added to system. Capacity: 10 passengers.";
     }
 
+   
     // Check if bus name is valid
     public boolean isValidBusName(String busName) {
         if (busName == null || busName.trim().isEmpty()) {

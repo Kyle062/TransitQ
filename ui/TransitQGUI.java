@@ -262,7 +262,7 @@ public class TransitQGUI extends JFrame {
         contentPanel.add(createStyledButton("TICKET PRICES", 0, 0, 1, 1, e -> showTicketPrices()));
         departBusButton = createStyledButton("DEPART BUS", 0, 0, 1, 1, e -> departBusAction());
         logoutButton = createStyledButton("LOGOUT", 0, 0, 1, 1, e -> logoutAction());
-
+        contentPanel.add(createStyledButton("BUS QUEUE", 0, 0, 1, 1, e -> showEnhancedBusAssignment()));
         contentPanel.add(createStyledButton("BUS MANAGER", 0, 0, 1, 1, e -> showEnhancedBusAssignment()));
         contentPanel.add(departBusButton);
         contentPanel.add(logoutButton);
@@ -1131,64 +1131,163 @@ public class TransitQGUI extends JFrame {
                 options,
                 options[0]);
 
-        switch (choice) {
-            case 0: // Assign Bus
-                showAssignBusDialog();
-                break;
-            // case 2: Cancel - do nothing
-        }
+        showAssignBusDialog();
+
     }
 
     private void showAssignBusDialog() {
-        // Get ALL buses in the system
-        List<String> allBuses = manager.getAllSystemBuses();
+        // Create dialog with multiple options
+        String[] options = { "Peek Top Bus", "Assign New Bus", "Cancel" };
+        int choice = JOptionPane.showOptionDialog(this,
+                "Bus Management Options:",
+                "Bus Queue Manager",
+                JOptionPane.DEFAULT_OPTION,
+                JOptionPane.QUESTION_MESSAGE,
+                null,
+                options,
+                options[0]); // Default to "Peek Top Bus"
 
-        if (allBuses.isEmpty()) {
-            JOptionPane.showMessageDialog(this,
-                    "No buses available in the system.",
-                    "No Buses Available",
-                    JOptionPane.WARNING_MESSAGE);
-            return;
+        switch (choice) {
+            case 0: // Peek Top Bus
+                showPeekBusDialog();
+                break;
+            case 1: // Assign New Bus
+                showAddBusToQueueDialog();
+                break;
+            case 2: // Cancel - do nothing
+                break;
         }
+    }
 
-        JComboBox<String> busCombo = new JComboBox<>(allBuses.toArray(new String[0]));
+    private void showPeekBusDialog() {
+        String busDetails = manager.peekBus();
 
+        JTextArea textArea = new JTextArea(busDetails);
+        textArea.setEditable(false);
+        textArea.setFont(new Font("Monospaced", Font.PLAIN, 14));
+        textArea.setBackground(new Color(240, 248, 255));
+
+        JScrollPane scrollPane = new JScrollPane(textArea);
+        scrollPane.setPreferredSize(new Dimension(500, 300));
+
+        JOptionPane.showMessageDialog(this, scrollPane,
+                "Bus at Top of Queue",
+                JOptionPane.INFORMATION_MESSAGE);
+
+        logOperation("BUS: Peeked at top bus in queue.");
+    }
+
+    private void showAddBusToQueueDialog() {
+        // Create a dialog with input fields
         JPanel panel = new JPanel();
-        panel.add(new JLabel("Select any bus to assign:"));
-        panel.add(busCombo);
+        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+        panel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+
+        // Bus name input
+        panel.add(new JLabel("Enter Bus Name:"));
+        JTextField busNameField = new JTextField(15);
+        busNameField.setText("BUS ");
+        panel.add(busNameField);
+
+        panel.add(Box.createRigidArea(new Dimension(0, 10)));
+
+        // Capacity display (uneditable)
+        panel.add(new JLabel("Capacity (Fixed):"));
+        JTextField capacityField = new JTextField("10", 5);
+        capacityField.setEditable(false);
+        capacityField.setBackground(Color.LIGHT_GRAY);
+        panel.add(capacityField);
+
+        panel.add(Box.createRigidArea(new Dimension(0, 10)));
+
+        // Instructions
+        JLabel instructions = new JLabel(
+                "<html><small>Bus name will be converted to uppercase.<br>Capacity is fixed at 10 passengers.</small></html>");
+        instructions.setForeground(Color.GRAY);
+        panel.add(instructions);
 
         int result = JOptionPane.showConfirmDialog(this, panel,
-                "Assign Any Bus to Front",
-                JOptionPane.OK_CANCEL_OPTION);
+                "Create New Bus",
+                JOptionPane.OK_CANCEL_OPTION,
+                JOptionPane.PLAIN_MESSAGE);
 
         if (result == JOptionPane.OK_OPTION) {
-            String selectedBus = (String) busCombo.getSelectedItem();
+            String busName = busNameField.getText().trim().toUpperCase();
 
-            // If this bus is not currently visible, make it visible
-            if (!busPanels.containsKey(selectedBus)) {
-                JPanel innerRightPanel = findInnerRightPanel();
-                if (innerRightPanel != null) {
-                    addNewBusPanel(selectedBus, innerRightPanel);
+            // Validate input
+            if (busName.isEmpty()) {
+                JOptionPane.showMessageDialog(this,
+                        "Bus name cannot be empty!",
+                        "Invalid Input",
+                        JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            // Check if bus already exists
+            List<String> allSystemBuses = manager.getAllSystemBuses();
+            if (allSystemBuses.contains(busName)) {
+                JOptionPane.showMessageDialog(this,
+                        "Bus " + busName + " already exists!\nPlease choose a different name.",
+                        "Bus Already Exists",
+                        JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+
+            // Create the new bus with fixed capacity of 10
+            try {
+                // Add bus to the system
+                String addResult = manager.addManualBus(busName);
+
+                if (addResult.startsWith("SUCCESS")) {
+                    // Add to available bus names
+                    manager.addAvailableBusName(busName);
+
+                    // Add to the END of the queue
+                    List<String> currentOrder = manager.getBusOrder();
+                    if (!currentOrder.contains(busName)) {
+                        currentOrder.add(busName);
+
+                        // Update the visual
+                        JPanel innerRightPanel = findInnerRightPanel();
+                        if (innerRightPanel != null) {
+                            addNewBusPanel(busName, innerRightPanel);
+                        }
+
+                        // Log the operation
+                        logOperation("BUS CREATED: " + busName + " added to system and queue. Capacity: 10");
+
+                        // Update visuals
+                        updateAllBusPanels();
+                        updateVisuals();
+
+                        JOptionPane.showMessageDialog(this,
+                                "Successfully created new bus: " + busName + "\n" +
+                                        "• Capacity: 10 passengers\n" +
+                                        "• Added to available buses\n" +
+                                        "• Added to END of queue\n" +
+                                        "• Current queue size: " + currentOrder.size() + " buses",
+                                "Bus Created Successfully",
+                                JOptionPane.INFORMATION_MESSAGE);
+                    } else {
+                        JOptionPane.showMessageDialog(this,
+                                busName + " was created but is already in the queue!",
+                                "Bus Already in Queue",
+                                JOptionPane.WARNING_MESSAGE);
+                    }
+                } else {
+                    JOptionPane.showMessageDialog(this,
+                            "Failed to create bus: " + addResult,
+                            "Creation Failed",
+                            JOptionPane.ERROR_MESSAGE);
                 }
+
+            } catch (Exception e) {
+                JOptionPane.showMessageDialog(this,
+                        "Error creating bus: " + e.getMessage(),
+                        "Error",
+                        JOptionPane.ERROR_MESSAGE);
+                logOperation("ERROR: Failed to create bus " + busName + ": " + e.getMessage());
             }
-
-            // Assign the bus to the front
-            manager.assignBus(selectedBus);
-            logOperation("ASSIGN BUS: " + selectedBus + " assigned to front of queue.");
-
-            // Update the visual immediately
-            JPanel innerRightPanel = findInnerRightPanel();
-            if (innerRightPanel != null) {
-                updateBusPositions(innerRightPanel);
-            }
-
-            updateVisuals();
-
-            JOptionPane.showMessageDialog(this,
-                    selectedBus + " has been assigned to the front!\n" +
-                            "Previous bus moved back in the queue.",
-                    "Bus Assigned",
-                    JOptionPane.INFORMATION_MESSAGE);
         }
     }
 
