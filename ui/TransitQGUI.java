@@ -1241,7 +1241,7 @@ public class TransitQGUI extends JFrame {
                 if (addResult.startsWith("SUCCESS")) {
                     // Add to available bus names
                     manager.addAvailableBusName(busName);
-
+                    debugBusInfo();
                     // Add to the END of the queue
                     List<String> currentOrder = manager.getBusOrder();
                     if (!currentOrder.contains(busName)) {
