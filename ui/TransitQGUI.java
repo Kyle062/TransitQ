@@ -29,28 +29,39 @@ public class TransitQGUI extends JFrame {
     // MANAGER AND LOGGING METHODS
     // ====================================================================
     // getManager() - Returns the TransitQManager instance.
-    // logOperation(String message) - Adds timestamped messages to the operation log area.
-    
+    // logOperation(String message) - Adds timestamped messages to the operation log
+    // area.
+
     // ====================================================================
     // GUI SETUP AND LAYOUT METHODS
     // ====================================================================
-    // updateQueueIndicators() - Updates blinking indicators in ticket and assign areas.
-    // updateLayoutForContentPanelSize(JPanel contentPanel) - Dynamically adjusts layout based on window size changes.
-    // updateBusPositions(JPanel innerRightPanel) - Updates positions of bus panels in the layout.
+    // updateQueueIndicators() - Updates blinking indicators in ticket and assign
+    // areas.
+    // updateLayoutForContentPanelSize(JPanel contentPanel) - Dynamically adjusts
+    // layout based on window size changes.
+    // updateBusPositions(JPanel innerRightPanel) - Updates positions of bus panels
+    // in the layout.
     // positionSidebarButtons(JPanel contentPanel) - Positions sidebar buttons
-    // positionRightPanelComponents(JPanel contentPanel) - Positions right panel components
+    // positionRightPanelComponents(JPanel contentPanel) - Positions right panel
+    // components
     // findInnerRightPanel(JPanel contentPanel) - Finds the inner right panel
-    // positionAssignArea(JPanel innerRightPanel, int innerW, int innerH) - Positions assign area
-    // positionRedSeparator(JPanel innerRightPanel, int innerW, int innerH) - Positions red separator
-    // positionTicketAreaContainer(JPanel innerRightPanel, int innerW, int innerH) - Positions ticket area
-    // positionTicketAreaButtons(JPanel contentPanel) - Positions ticket area buttons
+    // positionAssignArea(JPanel innerRightPanel, int innerW, int innerH) -
+    // Positions assign area
+    // positionRedSeparator(JPanel innerRightPanel, int innerW, int innerH) -
+    // Positions red separator
+    // positionTicketAreaContainer(JPanel innerRightPanel, int innerW, int innerH) -
+    // Positions ticket area
+    // positionTicketAreaButtons(JPanel contentPanel) - Positions ticket area
+    // buttons
     // positionAddToBusButton(JPanel contentPanel) - Positions add to bus button
-    // updateInnerRightPanelRepaint(JPanel contentPanel) - Updates inner right panel repaint
+    // updateInnerRightPanelRepaint(JPanel contentPanel) - Updates inner right panel
+    // repaint
 
     // ====================================================================
     // PANEL CREATION METHODS
     // ====================================================================
-    // createMainContentPanel() - Creates and configures the main content panel with all UI components.
+    // createMainContentPanel() - Creates and configures the main content panel with
+    // all UI components.
     // createSidebarButtons(JPanel contentPanel) - Creates sidebar buttons
     // createRightPanel(JPanel contentPanel) - Creates the right panel
     // createInnerRightPanel() - Creates the inner right panel
@@ -58,13 +69,19 @@ public class TransitQGUI extends JFrame {
     // createPassengerQueueAreas(JPanel rightJPanel) - Creates passenger queue areas
     // createActionButtons(JPanel rightJPanel) - Creates action buttons
     // createVisualElements(JPanel rightJPanel) - Creates visual elements
-    // initializeBusPanels(JPanel rightJPanel) - Initializes bus panels from manager's bus order.
-    // addNewBusPanel(String busName, JPanel rightJPanel) - Dynamically adds a new bus panel to the display.
+    // initializeBusPanels(JPanel rightJPanel) - Initializes bus panels from
+    // manager's bus order.
+    // addNewBusPanel(String busName, JPanel rightJPanel) - Dynamically adds a new
+    // bus panel to the display.
     // createBusPanel(String name) - Creates a visual panel representation of a bus.
-    // createLogPanel() - Creates the operation log panel at the bottom of the window.
-    // createStyledButton(String text, int x, int y, int w, int h, ActionListener listener) - Creates a styled button with hover effects.
-    // createAssignAreaVisPanel(int width, int height) - Creates the assign area visualization panel.
-    // createTicketAreaContainer(int width, int height) - Creates the ticket area container panel.
+    // createLogPanel() - Creates the operation log panel at the bottom of the
+    // window.
+    // createStyledButton(String text, int x, int y, int w, int h, ActionListener
+    // listener) - Creates a styled button with hover effects.
+    // createAssignAreaVisPanel(int width, int height) - Creates the assign area
+    // visualization panel.
+    // createTicketAreaContainer(int width, int height) - Creates the ticket area
+    // container panel.
 
     // ====================================================================
     // VISUALIZATION METHODS
@@ -75,23 +92,27 @@ public class TransitQGUI extends JFrame {
     // updateBusVisuals() - Updates bus visual representations
     // updateAssignAreaVisuals() - Updates assign area visuals
     // updateTicketAreaVisuals() - Updates ticket area visuals
-    // createPassengerIcon(...) - Creates a visual icon representation of a passenger.
+    // createPassengerIcon(...) - Creates a visual icon representation of a
+    // passenger.
     // generateColorFromId(int id) - Generates a unique color based on passenger ID.
 
     // ====================================================================
     // ACTION METHODS (USER INTERACTIONS)
     // ====================================================================
-    // showAddPassengerForm() - Shows a dialog form to add a new passenger to ticket area.
+    // showAddPassengerForm() - Shows a dialog form to add a new passenger to ticket
+    // area.
     // passPassengerAction() - Passes passenger from ticket area to assign area.
     // addPassengerToBusAction() - Adds passenger from assign area to bus.
     // departBusAction() - Handles bus departure (only when bus is full).
-    // showEnhancedBusAssignment() - Shows dialog for assigning different buses to active queue.
+    // showEnhancedBusAssignment() - Shows dialog for assigning different buses to
+    // active queue.
     // showAssignBusDialog() - Shows dialog to assign any bus to front
     // showAddBusDialog() - Shows dialog to add a new bus
     // searchPassengerAction() - Searches for passenger by ID or name.
     // removePassengerAction() - Removes passenger from system.
     // updatePassengerAction() - Updates passenger information with validation.
-    // verifyPaymentForUpdate(...) - Helper method to verify payment for updated passengers.
+    // verifyPaymentForUpdate(...) - Helper method to verify payment for updated
+    // passengers.
 
     // ====================================================================
     // REPORT METHODS
@@ -543,9 +564,17 @@ public class TransitQGUI extends JFrame {
         int maxVisibleBuses = 4;
         List<String> visibleBuses = new ArrayList<>();
 
-        // Add buses in order until we reach the limit
-        for (int i = 0; i < Math.min(busOrder.size(), maxVisibleBuses); i++) {
-            visibleBuses.add(busOrder.get(i));
+        // Always show the currently assigned bus first
+        String currentBus = manager.getCurrentlyAssignedBusName();
+        if (currentBus != null && busOrder.contains(currentBus)) {
+            visibleBuses.add(currentBus);
+        }
+
+        // Add other buses in order until we reach the limit
+        for (String busName : busOrder) {
+            if (!visibleBuses.contains(busName) && visibleBuses.size() < maxVisibleBuses) {
+                visibleBuses.add(busName);
+            }
         }
 
         // Position visible buses
@@ -553,6 +582,15 @@ public class TransitQGUI extends JFrame {
             String busName = visibleBuses.get(i);
             JPanel busPanel = busPanels.get(busName);
             if (busPanel != null) {
+                int busY = busStartY + (i * (busH + busGap));
+                busPanel.setBounds(busStartX, busY, busW, busH);
+                busPanel.setVisible(true);
+            } else {
+                // If bus panel doesn't exist, create it
+                busPanel = createBusPanel(busName);
+                busPanels.put(busName, busPanel);
+                innerRightPanel.add(busPanel);
+
                 int busY = busStartY + (i * (busH + busGap));
                 busPanel.setBounds(busStartX, busY, busW, busH);
                 busPanel.setVisible(true);
@@ -582,17 +620,40 @@ public class TransitQGUI extends JFrame {
             JPanel busPanel = createBusPanel(busName);
             busPanels.put(busName, busPanel);
             rightJPanel.add(busPanel);
+            rightJPanel.setComponentZOrder(busPanel, 0); // Bring to front
 
-            // Add to the beginning of the bus order
+            // Ensure it's added to the beginning of the visual order
             List<String> busOrder = manager.getBusOrder();
             if (!busOrder.contains(busName)) {
                 busOrder.add(0, busName);
             }
 
-            rightJPanel.revalidate();
-            rightJPanel.repaint();
+            // Immediately update bus positions
             updateBusPositions(rightJPanel);
+
+            // Force repaint
+            busPanel.setVisible(true);
+            busPanel.revalidate();
+            busPanel.repaint();
         }
+    }
+
+    private void debugBusInfo() {
+        System.out.println("=== DEBUG BUS INFO ===");
+        System.out.println("Manager buses: " + manager.getAllBusNames());
+        System.out.println("Visual panels: " + busPanels.keySet());
+        System.out.println("Bus order: " + manager.getBusOrder());
+
+        JPanel innerRightPanel = findInnerRightPanel();
+        if (innerRightPanel != null) {
+            System.out.println("Inner panel components: " + innerRightPanel.getComponentCount());
+            for (Component comp : innerRightPanel.getComponents()) {
+                if (comp instanceof JPanel && busPanels.containsValue(comp)) {
+                    System.out.println("  Found bus panel: " + comp.getBounds());
+                }
+            }
+        }
+        System.out.println("=====================");
     }
 
     private JPanel createBusPanel(String name) {
@@ -1060,7 +1121,7 @@ public class TransitQGUI extends JFrame {
     // ====================================================================
     private void showEnhancedBusAssignment() {
         // Simple dialog with options
-        String[] options = { "Assign Bus", "Add New Bus", "Cancel" };
+        String[] options = { "Assign Bus", "Cancel" };
         int choice = JOptionPane.showOptionDialog(this,
                 "Select an option:",
                 "Bus Management",
@@ -1073,9 +1134,6 @@ public class TransitQGUI extends JFrame {
         switch (choice) {
             case 0: // Assign Bus
                 showAssignBusDialog();
-                break;
-            case 1: // Add New Bus
-                showAddBusDialog();
                 break;
             // case 2: Cancel - do nothing
         }
@@ -1118,11 +1176,10 @@ public class TransitQGUI extends JFrame {
             manager.assignBus(selectedBus);
             logOperation("ASSIGN BUS: " + selectedBus + " assigned to front of queue.");
 
-            // Force this bus to be at the front of the visual queue
-            List<String> busOrder = manager.getBusOrder();
-            if (busOrder.contains(selectedBus)) {
-                busOrder.remove(selectedBus);
-                busOrder.add(0, selectedBus);
+            // Update the visual immediately
+            JPanel innerRightPanel = findInnerRightPanel();
+            if (innerRightPanel != null) {
+                updateBusPositions(innerRightPanel);
             }
 
             updateVisuals();
@@ -1132,48 +1189,6 @@ public class TransitQGUI extends JFrame {
                             "Previous bus moved back in the queue.",
                     "Bus Assigned",
                     JOptionPane.INFORMATION_MESSAGE);
-        }
-    }
-
-    private void showAddBusDialog() {
-        // Simple input dialog
-        String busName = JOptionPane.showInputDialog(this,
-                "Enter bus name (e.g., BUS X, BUS 101):",
-                "Add New Bus",
-                JOptionPane.PLAIN_MESSAGE);
-
-        if (busName == null || busName.trim().isEmpty()) {
-            return; // User cancelled
-        }
-
-        String formattedName = busName.trim().toUpperCase();
-
-        // Check if bus already exists
-        if (manager.getAllBusNames().contains(formattedName)) {
-            JOptionPane.showMessageDialog(this,
-                    "Bus '" + formattedName + "' already exists.",
-                    "Duplicate Bus",
-                    JOptionPane.ERROR_MESSAGE);
-            return;
-        }
-
-        // Add the bus
-        String result = manager.addManualBus(busName);
-        logOperation("ADD BUS: " + result);
-
-        if (result.startsWith("SUCCESS")) {
-            manager.addManualBus(busName);
-            updateVisuals();
-
-            JOptionPane.showMessageDialog(this,
-                    result,
-                    "Bus Added",
-                    JOptionPane.INFORMATION_MESSAGE);
-        } else {
-            JOptionPane.showMessageDialog(this,
-                    result,
-                    "Add Bus Error",
-                    JOptionPane.ERROR_MESSAGE);
         }
     }
 

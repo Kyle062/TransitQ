@@ -130,8 +130,20 @@ public class TransitQManager {
         buses.put("BUS B", new Bus("BUS B", 10));
         buses.put("BUS C", new Bus("BUS C", 10));
         buses.put("BUS D", new Bus("BUS D", 10));
+        buses.put("BUS E", new Bus("BUS E", 10));
+        buses.put("BUS F", new Bus("BUS F", 10));
+        buses.put("BUS G", new Bus("BUS G", 10));
+        buses.put("BUS H", new Bus("BUS H", 10));
 
-        // Initialize bus order
+        // Initialize available bus names
+        this.availableBusNames = new ArrayList<>();
+        availableBusNames.add("BUS E");
+        availableBusNames.add("BUS F");
+        availableBusNames.add("BUS G");
+        availableBusNames.add("BUS H");
+       
+
+        // Initialize bus order and set the first bus as currently assigned
         this.busOrder = new ArrayList<>(buses.keySet());
         this.currentlyAssignedBusName = busOrder.get(0);
 
@@ -184,7 +196,79 @@ public class TransitQManager {
         }
     }
 
-    // --- Enhanced Bus Assignment Methods ---
+    // ENQUEUE/ADDING
+    // --- Enhanced Core Operations with Payment Verification ---
+    // Adds passenger to ticket area queue
+    public String addPassengerToTicketArea(Passenger p) {
+        if (ticketAreaQueue.size() >= TICKET_AREA_CAPACITY) {
+            return "ALERT: TICKET AREA FULL! Cannot add new passenger.";
+        }
+        ticketAreaQueue.offer(p);
+        return "ENQUEUE: Added to Ticket Area. ID: " + p.getPassengerId() +
+                ". Queue: " + ticketAreaQueue.size() + "/" + TICKET_AREA_CAPACITY;
+    }
+
+    // Moves passenger from ticket area to assign area with payment verification
+    public String passPassengerToAssignArea() {
+        if (ticketAreaQueue.isEmpty()) {
+            return "ERROR: TICKET AREA is empty. No passenger to process.";
+        }
+        if (assignAreaQueue.size() >= ASSIGN_AREA_DISPLAY_CAPACITY) {
+            return "ALERT: ASSIGN PASSENGER AREA FULL! Board a passenger first.";
+        }
+
+        Passenger p = ticketAreaQueue.poll();
+        if (p != null) {
+            boolean paymentVerified = verifyPayment(p);
+            p.setPaid(paymentVerified);
+
+            if (!paymentVerified) {
+                removePassenger(p.getPassengerId());
+                return "DENIED: Passenger ID " + p.getPassengerId() +
+                        " payment verification failed. Removed from system.";
+            }
+
+            recordPayment(p);
+
+            assignAreaQueue.offer(p);
+            return "PASS: Passenger ID " + p.getPassengerId() +
+                    " moved to ASSIGN AREA. Payment Verified: ₱" + p.getMoneyPaid() +
+                    ". Assigned Bus: " + currentlyAssignedBusName;
+        }
+        return "ERROR: Failed to pass passenger (unexpected error).";
+    }
+
+    // Boards passenger from assign area to bus
+    public String addPassengerToBus() {
+        if (assignAreaQueue.isEmpty()) {
+            return "ERROR: ASSIGN PASSENGER AREA is empty. No passenger to board.";
+        }
+
+        Bus assignedBus = buses.get(currentlyAssignedBusName);
+        if (assignedBus == null) {
+            return "ERROR: No bus is currently assigned.";
+        }
+
+        if (assignedBus.getCurrentLoad() >= assignedBus.getCapacity()) {
+            return "ALERT: " + assignedBus.getName() + " is full! Please depart the bus.";
+        }
+
+        Passenger boarded = assignAreaQueue.poll();
+        if (boarded != null) {
+            boolean boardedOk = assignedBus.boardPassenger();
+            if (boardedOk) {
+                servedLog.add(boarded);
+                return "BOARDED: Passenger ID " + boarded.getPassengerId() + " has boarded " + currentlyAssignedBusName
+                        +
+                        ". Load: " + assignedBus.getCurrentLoad() + "/" + assignedBus.getCapacity();
+            } else {
+                assignAreaQueue.offer(boarded);
+                return "ALERT: " + assignedBus.getName()
+                        + " became full before boarding. Passenger returned to assign area.";
+            }
+        }
+        return "ERROR: Failed to board passenger (unexpected error).";
+    }
 
     // Assigns a specific bus to the active queue
     public String assignBusToQueue(String busName) {
@@ -193,25 +277,95 @@ public class TransitQManager {
         }
 
         Bus bus = buses.get(busName);
-
         if (bus.getCurrentLoad() > 0 && !busName.equals(currentlyAssignedBusName)) {
             return "ALERT: " + busName + " has " + bus.getCurrentLoad() +
                     " passengers. Cannot reassign while occupied.";
         }
-
         if (bus.isFull() && !busName.equals(currentlyAssignedBusName)) {
             return "ALERT: " + busName + " is full. Please depart it first before reassigning.";
         }
 
         this.currentlyAssignedBusName = busName;
-
         if (busOrder.contains(busName)) {
             busOrder.remove(busName);
             busOrder.add(0, busName);
         }
-
         return "ASSIGNED: " + busName + " is now assigned to the queue. Load: " +
                 bus.getCurrentLoad() + "/" + bus.getCapacity();
+    }
+
+    // DEQUEUE / REMOVE
+    // Removes passenger from system by ID
+    public String removePassenger(int id) {
+        for (Passenger p : ticketAreaQueue) {
+            if (p.getPassengerId() == id) {
+                ticketAreaQueue.remove(p);
+                return "REMOVE: Passenger ID " + id + " removed from TICKET AREA.";
+            }
+        }
+
+        for (Passenger p : assignAreaQueue) {
+            if (p.getPassengerId() == id) {
+                assignAreaQueue.remove(p);
+                return "REMOVE: Passenger ID " + id + " removed from ASSIGN AREA.";
+            }
+        }
+
+        return "ERROR: Passenger ID " + id + " not found in either queue for removal.";
+    }
+
+    // SEARCH
+    // Searches for passenger by ID or name
+    public Passenger searchPassenger(String searchInput) {
+        try {
+            int id = Integer.parseInt(searchInput);
+            return searchPassengerById(id);
+        } catch (NumberFormatException e) {
+            return searchPassengerByName(searchInput);
+        }
+    }
+
+    // Searches passenger by ID
+    private Passenger searchPassengerById(int id) {
+        for (Passenger p : ticketAreaQueue) {
+            if (p.getPassengerId() == id) {
+                return p;
+            }
+        }
+        for (Passenger p : assignAreaQueue) {
+            if (p.getPassengerId() == id) {
+                return p;
+            }
+        }
+        return null;
+    }
+
+    // Searches passenger by name
+    private Passenger searchPassengerByName(String name) {
+        for (Passenger p : ticketAreaQueue) {
+            if (p.getName().equalsIgnoreCase(name)) {
+                return p;
+            }
+        }
+        for (Passenger p : assignAreaQueue) {
+            if (p.getName().equalsIgnoreCase(name)) {
+                return p;
+            }
+        }
+        return null;
+    }
+
+    // UPDATE
+    // Updates passenger information
+    public String updatePassenger(int id, String newName, String newDest, String newTicketType) {
+        Passenger p = searchPassengerById(id);
+        if (p != null) {
+            p.setName(newName);
+            p.setDestination(newDest);
+            p.setTicketType(newTicketType);
+            return "UPDATE: Passenger ID " + id + " updated successfully. New Name: " + newName;
+        }
+        return "ERROR: Passenger ID " + id + " not found for update.";
     }
 
     // Returns list of ALL buses in the system (including those not in current
@@ -219,6 +373,15 @@ public class TransitQManager {
     public List<String> getAllSystemBuses() {
         return new ArrayList<>(buses.keySet());
     }
+
+
+    //Add SystemBuss 
+    public void addSystemBus(String busName) {
+        if (!buses.containsKey(busName)) {
+            buses.put(busName, new Bus(busName, 10));
+        }
+    }
+
 
     // Returns list of available (empty) buses
     public List<String> getAvailableBuses() {
@@ -316,80 +479,6 @@ public class TransitQManager {
         } catch (NumberFormatException e) {
             System.err.println("Error recording payment for passenger: " + passenger.getPassengerId());
         }
-    }
-
-    // --- Enhanced Core Operations with Payment Verification ---
-
-    // Adds passenger to ticket area queue
-    public String addPassengerToTicketArea(Passenger p) {
-        if (ticketAreaQueue.size() >= TICKET_AREA_CAPACITY) {
-            return "ALERT: TICKET AREA FULL! Cannot add new passenger.";
-        }
-        ticketAreaQueue.offer(p);
-        return "ENQUEUE: Added to Ticket Area. ID: " + p.getPassengerId() +
-                ". Queue: " + ticketAreaQueue.size() + "/" + TICKET_AREA_CAPACITY;
-    }
-
-    // Moves passenger from ticket area to assign area with payment verification
-    public String passPassengerToAssignArea() {
-        if (ticketAreaQueue.isEmpty()) {
-            return "ERROR: TICKET AREA is empty. No passenger to process.";
-        }
-        if (assignAreaQueue.size() >= ASSIGN_AREA_DISPLAY_CAPACITY) {
-            return "ALERT: ASSIGN PASSENGER AREA FULL! Board a passenger first.";
-        }
-
-        Passenger p = ticketAreaQueue.poll();
-        if (p != null) {
-            boolean paymentVerified = verifyPayment(p);
-            p.setPaid(paymentVerified);
-
-            if (!paymentVerified) {
-                removePassenger(p.getPassengerId());
-                return "DENIED: Passenger ID " + p.getPassengerId() +
-                        " payment verification failed. Removed from system.";
-            }
-
-            recordPayment(p);
-
-            assignAreaQueue.offer(p);
-            return "PASS: Passenger ID " + p.getPassengerId() +
-                    " moved to ASSIGN AREA. Payment Verified: ₱" + p.getMoneyPaid() +
-                    ". Assigned Bus: " + currentlyAssignedBusName;
-        }
-        return "ERROR: Failed to pass passenger (unexpected error).";
-    }
-
-    // Boards passenger from assign area to bus
-    public String addPassengerToBus() {
-        if (assignAreaQueue.isEmpty()) {
-            return "ERROR: ASSIGN PASSENGER AREA is empty. No passenger to board.";
-        }
-
-        Bus assignedBus = buses.get(currentlyAssignedBusName);
-        if (assignedBus == null) {
-            return "ERROR: No bus is currently assigned.";
-        }
-
-        if (assignedBus.getCurrentLoad() >= assignedBus.getCapacity()) {
-            return "ALERT: " + assignedBus.getName() + " is full! Please depart the bus.";
-        }
-
-        Passenger boarded = assignAreaQueue.poll();
-        if (boarded != null) {
-            boolean boardedOk = assignedBus.boardPassenger();
-            if (boardedOk) {
-                servedLog.add(boarded);
-                return "BOARDED: Passenger ID " + boarded.getPassengerId() + " has boarded " + currentlyAssignedBusName
-                        +
-                        ". Load: " + assignedBus.getCurrentLoad() + "/" + assignedBus.getCapacity();
-            } else {
-                assignAreaQueue.offer(boarded);
-                return "ALERT: " + assignedBus.getName()
-                        + " became full before boarding. Passenger returned to assign area.";
-            }
-        }
-        return "ERROR: Failed to board passenger (unexpected error).";
     }
 
     // --- Enhanced Bus Departure Logic ---
@@ -531,77 +620,6 @@ public class TransitQManager {
     }
 
     // --- Existing Utility Methods ---
-
-    // Searches for passenger by ID or name
-    public Passenger searchPassenger(String searchInput) {
-        try {
-            int id = Integer.parseInt(searchInput);
-            return searchPassengerById(id);
-        } catch (NumberFormatException e) {
-            return searchPassengerByName(searchInput);
-        }
-    }
-
-    // Searches passenger by ID
-    private Passenger searchPassengerById(int id) {
-        for (Passenger p : ticketAreaQueue) {
-            if (p.getPassengerId() == id) {
-                return p;
-            }
-        }
-        for (Passenger p : assignAreaQueue) {
-            if (p.getPassengerId() == id) {
-                return p;
-            }
-        }
-        return null;
-    }
-
-    // Searches passenger by name
-    private Passenger searchPassengerByName(String name) {
-        for (Passenger p : ticketAreaQueue) {
-            if (p.getName().equalsIgnoreCase(name)) {
-                return p;
-            }
-        }
-        for (Passenger p : assignAreaQueue) {
-            if (p.getName().equalsIgnoreCase(name)) {
-                return p;
-            }
-        }
-        return null;
-    }
-
-    // Updates passenger information
-    public String updatePassenger(int id, String newName, String newDest, String newTicketType) {
-        Passenger p = searchPassengerById(id);
-        if (p != null) {
-            p.setName(newName);
-            p.setDestination(newDest);
-            p.setTicketType(newTicketType);
-            return "UPDATE: Passenger ID " + id + " updated successfully. New Name: " + newName;
-        }
-        return "ERROR: Passenger ID " + id + " not found for update.";
-    }
-
-    // Removes passenger from system by ID
-    public String removePassenger(int id) {
-        for (Passenger p : ticketAreaQueue) {
-            if (p.getPassengerId() == id) {
-                ticketAreaQueue.remove(p);
-                return "REMOVE: Passenger ID " + id + " removed from TICKET AREA.";
-            }
-        }
-
-        for (Passenger p : assignAreaQueue) {
-            if (p.getPassengerId() == id) {
-                assignAreaQueue.remove(p);
-                return "REMOVE: Passenger ID " + id + " removed from ASSIGN AREA.";
-            }
-        }
-
-        return "ERROR: Passenger ID " + id + " not found in either queue for removal.";
-    }
 
     // --- Getters and Setters ---
 
@@ -836,4 +854,12 @@ public class TransitQManager {
     public List<String> getAllBusNames() {
         return new ArrayList<>(buses.keySet());
     }
+
+    // add available bus name back to available list
+    public void addAvailableBusName(String busName) {
+        if (availableBusNames != null && !availableBusNames.contains(busName)) {
+            availableBusNames.add(busName);
+        }
+    }
+
 }
