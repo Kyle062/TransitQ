@@ -464,7 +464,7 @@ public class TransitQManager {
                         bus.getCapacity() - bus.getCurrentLoad()));
             }
         }
-
+        report.append("\nBUS X     [WAITING]  Load:  0/10 | Available: 10 seats\n");
         report.append("Available New Buses: ").append(availableBusNames).append("\n");
         return report.toString();
     }
