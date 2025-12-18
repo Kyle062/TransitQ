@@ -887,7 +887,6 @@ public class TransitQManager {
         return "SUCCESS: Bus " + formattedName + " added to system. Capacity: 10 passengers.";
     }
 
-   
     // Check if bus name is valid
     public boolean isValidBusName(String busName) {
         if (busName == null || busName.trim().isEmpty()) {

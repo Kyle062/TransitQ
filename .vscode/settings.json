@@ -1,3 +1,7 @@
 {
-    "CodeGPT.apiKey": "OpenAI"
+    "CodeGPT.apiKey": "OpenAI",
+    "java.project.referencedLibraries": [
+        "lib/**/*.jar",
+        "c:\\Users\\kylea\\OneDrive\\Desktop\\mysql-connector-j-9.5.0\\mysql-connector-j-9.5.0.jar"
+    ]
 }
